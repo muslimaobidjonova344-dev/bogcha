@@ -1,0 +1,16 @@
+{
+  "name": "Kichkintoy",
+  "short_name": "Kichkintoy",
+  "description": "Bog'cha va repetitor qidirish platformasi",
+  "lang": "uz",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FBF8F0",
+  "theme_color": "#245C43",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

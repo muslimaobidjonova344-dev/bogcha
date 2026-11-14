@@ -1,0 +1,37 @@
+# Render Blueprint: New -> Blueprint -> repo ni ulang. Maxfiy qiymatlar (sync: false) panelda kiritiladi.
+services:
+  - type: web
+    name: kichkintoy-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - { key: ENV, value: production }
+      - { key: DATABASE_URL, sync: false }
+      - { key: SECRET_KEY, generateValue: true }
+      - { key: JWT_SECRET, generateValue: true }
+      - { key: FRONTEND_URL, sync: false }
+      - { key: BACKEND_URL, sync: false }
+      - { key: APP_URL, sync: false }
+      - { key: COOKIE_SECURE, value: "true" }
+      - { key: APPS_SCRIPT_URL, sync: false }
+      - { key: APPS_SCRIPT_SECRET, sync: false }
+      - { key: SUPABASE_URL, sync: false }
+      - { key: SUPABASE_SERVICE_KEY, sync: false }
+      - { key: SUPERADMIN_EMAIL, sync: false }
+      - { key: SUPERADMIN_PASSWORD, sync: false }
+      - { key: SELF_PING_URL, sync: false }
+  - type: web
+    name: kichkintoy-frontend
+    runtime: node
+    rootDir: frontend
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start -- -p $PORT
+    autoDeploy: true
+    envVars:
+      - { key: NODE_ENV, value: production }
+      - { key: BACKEND_URL, sync: false }
