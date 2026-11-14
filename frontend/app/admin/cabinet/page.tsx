@@ -1,3 +1,4 @@
+'use client';
 import Cabinet from '@/features/Cabinet';
 import { ADMIN_NAV } from '@/lib/nav';
 

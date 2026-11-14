@@ -1,3 +1,4 @@
+'use client';
 import Cabinet from '@/features/Cabinet';
 import { KG_NAV } from '@/lib/nav';
 

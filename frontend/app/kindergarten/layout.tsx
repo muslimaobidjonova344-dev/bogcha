@@ -1,3 +1,4 @@
+'use client';
 import AppShell from '@/components/layout/AppShell';
 import { KG_NAV, KG_TABS } from '@/lib/nav';
 import type { ReactNode } from 'react';

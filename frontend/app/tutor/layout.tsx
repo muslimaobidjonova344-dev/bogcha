@@ -1,3 +1,4 @@
+'use client';
 import AppShell from '@/components/layout/AppShell';
 import { TUTOR_NAV, TUTOR_TABS } from '@/lib/nav';
 import type { ReactNode } from 'react';
