@@ -1,29 +1,39 @@
 'use client';
 import { motion } from 'framer-motion';
 
-/** stage: 'sending' — konvert tebranadi va aylanuvchi nuqtalar; 'flying' — maktub uchib chiqadi; 'sent' — konvert yopiq, yurakcha. */
+const dot = (i: number) => (
+  <motion.span key={i} className="h-2.5 w-2.5 rounded-full bg-primary" animate={{ opacity: [0.25, 1, 0.25], y: [0, -5, 0] }} transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.18 }} />
+);
+const rays = [0, 1, 2, 3, 4, 5, 6, 7];
+
+/** 'sending': yopiq konvert tebranadi + nuqtalar; 'flying': konvert ochilib maktub chiqadi; 'sent': ochiq konvert, nurlar. */
 export default function Envelope({ stage }: { stage: 'sending' | 'flying' | 'sent' }) {
+  const open = stage !== 'sending';
   return (
-    <div className="relative mx-auto h-40 w-52" aria-hidden>
-      {stage === 'sending' && [0, 1, 2].map((i) => (
-        <motion.span key={i} className="absolute -right-1 top-3 h-2.5 w-2.5 rounded-full bg-sun" animate={{ y: [0, -14, 0], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.18 }} style={{ right: -4 + i * -14 }} />
+    <div className="relative mx-auto h-44 w-56" aria-hidden>
+      {stage === 'sent' && rays.map((i) => (
+        <motion.span key={i} className="absolute left-1/2 top-1/2 h-3 w-1 rounded-full bg-sun" style={{ rotate: i * 45 }}
+          initial={{ opacity: 0, x: 0, y: 0 }} animate={{ opacity: [0, 1, 0], x: Math.sin((i * Math.PI) / 4) * 100, y: -Math.cos((i * Math.PI) / 4) * 78 }} transition={{ delay: 0.15, duration: 1.1, ease: 'easeOut' }} />
       ))}
-      <motion.svg viewBox="0 0 208 160" className="h-full w-full overflow-visible"
-        animate={stage === 'sending' ? { rotate: [-2, 2, -2], y: [0, -3, 0] } : stage === 'sent' ? { y: [0, -4, 0] } : { y: 0 }}
-        transition={{ duration: stage === 'sending' ? 0.9 : 3.5, repeat: Infinity, ease: 'easeInOut' }}>
-        <ellipse cx="104" cy="150" rx="70" ry="7" fill="#245C43" opacity=".08" />
-        <rect x="14" y="40" width="180" height="104" rx="14" fill="#FBF8F0" stroke="#E3EDE7" strokeWidth="2" />
-        <motion.g initial={false} animate={stage === 'sending' ? { y: 18, opacity: 1 } : stage === 'flying' ? { y: [18, -46, -110], x: [0, 6, 26], rotate: [0, -4, 10], opacity: [1, 1, 0] } : { y: 18, opacity: 0 }} transition={stage === 'flying' ? { duration: 1, ease: 'easeInOut' } : { duration: 0.2 }}>
-          <rect x="34" y="34" width="140" height="90" rx="8" fill="#fff" stroke="#D9E8DF" strokeWidth="2" />
-          <path d="M50 56 H112" stroke="#245C43" strokeWidth="5" strokeLinecap="round" /><path d="M50 74 H156 M50 88 H140 M50 102 H150" stroke="#8FAE98" strokeWidth="4" strokeLinecap="round" />
-        </motion.g>
-        <path d="M14 56 L104 120 L194 56 L194 130 Q194 144 180 144 L28 144 Q14 144 14 130 Z" fill="#F7EBD9" />
-        <path d="M14 56 L104 120 L194 56" fill="none" stroke="#E4A985" strokeWidth="2" strokeLinejoin="round" />
-        <motion.path d="M14 54 Q14 40 28 40 L180 40 Q194 40 194 54 L104 112 Z" fill="#E9C768" stroke="#D6B04D" strokeWidth="2" strokeLinejoin="round"
-          style={{ transformBox: 'fill-box', transformOrigin: '50% 0%' }} initial={false}
-          animate={{ scaleY: stage === 'sent' ? 1 : -0.9 }} transition={{ duration: 0.45, ease: 'easeInOut', delay: stage === 'sent' ? 0.1 : 0 }} />
-        {stage === 'sent' && <motion.path d="M104 78 c-6 -8 -18 -2 -11 7 l11 10 l11 -10 c7 -9 -5 -15 -11 -7z" fill="#E4A985" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5, type: 'spring' }} style={{ transformBox: 'fill-box', transformOrigin: '50% 50%' }} />}
-      </motion.svg>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <motion.img src="/auth/env_closed.png" alt="" className="absolute inset-x-0 top-6 mx-auto w-44" initial={false}
+        animate={open ? { opacity: 0, scale: 0.7, y: -10 } : { opacity: 1, scale: 1, y: [0, -6, 0], rotate: [-2, 2, -2] }}
+        transition={open ? { duration: 0.35 } : { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <motion.img src="/auth/env_open.png" alt="" className="absolute inset-x-0 top-2 mx-auto w-48" initial={false}
+        animate={open ? { opacity: 1, scale: stage === 'flying' ? [0.7, 1.12, 1] : 1, rotate: stage === 'flying' ? [-8, 4, 0] : 0, y: stage === 'sent' ? [0, -5, 0] : 0 } : { opacity: 0, scale: 0.7 }}
+        transition={stage === 'sent' ? { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.7, ease: 'easeOut' }} />
+      {stage === 'sending' && <div className="absolute inset-x-0 bottom-0 flex justify-center gap-2">{[0, 1, 2].map(dot)}</div>}
     </div>
+  );
+}
+
+/** Rasmli "pop" ko'rinish (galochka, clipboard, qulf): sakrab chiqadi va nurlanadi. */
+export function PopImage({ src, className = 'w-32' }: { src: string; className?: string }) {
+  return (
+    <motion.div className="relative mx-auto flex justify-center" initial={{ scale: 0.4, opacity: 0, rotate: -8 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 14 }} aria-hidden>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <motion.img src={src} alt="" className={className} animate={{ y: [0, -5, 0] }} transition={{ delay: 0.6, duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
+    </motion.div>
   );
 }

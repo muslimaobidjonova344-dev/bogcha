@@ -5,14 +5,15 @@ import { forwardRef, InputHTMLAttributes, ReactNode, useId, useState } from 'rea
 import { rise } from './AuthShell';
 import { passwordScore } from './schemas';
 
-type FieldProps = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; icon?: ReactNode; hint?: string; trailing?: ReactNode };
+type FieldProps = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; icon?: ReactNode; hint?: string; trailing?: ReactNode; noAnim?: boolean };
 
 /** Suzuvchi label'li input: fokusda halqa va rang silliq o'zgaradi, xato pastdan chiqadi. */
-export const TextField = forwardRef<HTMLInputElement, FieldProps>(function TextField({ label, error, icon, hint, trailing, className = '', ...rest }, ref) {
+export const TextField = forwardRef<HTMLInputElement, FieldProps>(function TextField({ label, error, icon, hint, trailing, noAnim, className = '', ...rest }, ref) {
   const id = useId();
   const [focus, setFocus] = useState(false);
+  const Wrap: any = noAnim ? 'div' : motion.div;
   return (
-    <motion.div variants={rise}>
+    <Wrap {...(noAnim ? {} : { variants: rise })}>
       <div className={`group relative rounded-2xl border bg-white transition-all duration-200 ${error ? 'border-red-400 ring-4 ring-red-100' : focus ? 'border-primary ring-4 ring-primary/15' : 'border-black/10 hover:border-primary/40'}`}>
         {icon && <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${focus ? 'text-primary' : 'text-black/35'}`}>{icon}</span>}
         <input
@@ -26,7 +27,7 @@ export const TextField = forwardRef<HTMLInputElement, FieldProps>(function TextF
         {trailing && <span className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</span>}
       </div>
       <FieldMsg id={id} error={error} hint={hint} />
-    </motion.div>
+    </Wrap>
   );
 });
 

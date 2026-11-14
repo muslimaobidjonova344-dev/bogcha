@@ -25,7 +25,8 @@ export type LoginValues = z.infer<typeof loginSchema>;
 
 export const registerSchema = z.object({
   role: z.enum(['parent', 'kindergarten_admin', 'tutor']),
-  full_name: z.string().trim().min(2, 'Ism va familiyani kiriting').refine((v) => v.split(/\s+/).length >= 2, 'Ism va familiya, ikkalasini yozing'),
+  first_name: z.string().trim().min(2, 'Ismingizni kiriting'),
+  last_name: z.string().trim().min(2, 'Familiyangizni kiriting'),
   provider_name: z.string().trim().max(200).optional(),
   email: emailRule,
   phone: phoneRule,

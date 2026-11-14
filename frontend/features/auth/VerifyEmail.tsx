@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { get, post } from '@/lib/api';
 import { errMsg } from '@/lib/format';
 import AuthShell, { rise } from './AuthShell';
-import Envelope from './Envelope';
+import Envelope, { PopImage } from './Envelope';
 import { FormError, SubmitButton, SuccessCheck, TextField } from './fields';
 import { useResendTimer } from './useResendTimer';
 
@@ -23,7 +23,7 @@ export default function VerifyEmail() {
   const dest = PROFILE_PATH[role] || '/';
 
   // holatlar: verifying | success | error | sending | flying | sent | empty
-  const [stage, setStage] = useState<'verifying' | 'success' | 'error' | 'sending' | 'flying' | 'sent' | 'empty'>(token ? 'verifying' : 'sending');
+  const [stage, setStage] = useState<'verifying' | 'success' | 'profile' | 'error' | 'sending' | 'flying' | 'sent' | 'empty'>(token ? 'verifying' : 'sending');
   const [err, setErr] = useState(''); const [manualEmail, setManualEmail] = useState('');
   const ran = useRef(false);
   const timer = useResendTimer();
@@ -54,7 +54,7 @@ export default function VerifyEmail() {
     return () => clearInterval(id);
   }, [stage]);
   const go = () => router.replace(me.data ? dest : `/login?next=${encodeURIComponent(dest)}`);
-  useEffect(() => { if (stage === 'success' && count <= 0) go(); }, [count, stage]); // eslint-disable-line
+  useEffect(() => { if (stage === 'success' && count <= 0) setStage('profile'); }, [count, stage]); // eslint-disable-line
 
   const resend = useMutation({
     mutationFn: (to: string) => post('/auth/resend-verification', { email: to }),
@@ -64,8 +64,9 @@ export default function VerifyEmail() {
   const target = email || manualEmail;
 
   return (
-    <AuthShell title={stage === 'success' ? 'Email tasdiqlandi!' : stage === 'error' ? 'Havola ishlamadi' : stage === 'empty' ? 'Emailni tasdiqlash' : stage === 'verifying' ? 'Tekshirilmoqda…' : 'Emailingizni tekshiring'} side="plain"
-      subtitle={stage === 'sending' ? 'Maktub tayyorlanmoqda…' : stage === 'flying' ? 'Maktub yo‘lga chiqdi!' : undefined}>
+    <AuthShell variant="card" step={3} emoji={stage === 'success' ? '🎉' : undefined}
+      title={stage === 'success' ? 'Email tasdiqlandi!' : stage === 'profile' ? 'Profilni to‘ldiring' : stage === 'error' ? 'Havola ishlamadi' : stage === 'empty' ? 'Emailni tasdiqlash' : stage === 'verifying' ? 'Tekshirilmoqda…' : stage === 'sent' ? 'Emailingizga xat yuborildi!' : 'Email yuborilmoqda...'}
+      subtitle={stage === 'sending' ? 'Tasdiqlash xatini yuborayapmiz…' : stage === 'flying' ? 'Maktub yo‘lga chiqdi!' : undefined}>
       <AnimatePresence mode="wait">
         {stage === 'verifying' && (
           <motion.div key="v" {...swap} className="py-10 text-center" role="status" aria-live="polite">
@@ -84,7 +85,7 @@ export default function VerifyEmail() {
         {stage === 'sent' && (
           <motion.div key="sent" {...swap} className="text-center">
             <Envelope stage="sent" />
-            <p className="mt-3 text-[15.5px] leading-relaxed text-black/65">Tasdiqlash havolasi <b className="break-all text-primary">{email}</b> manziliga yuborildi. Havola 30 daqiqa amal qiladi. Xat kelmasa, <b>Spam</b> papkasini ham tekshiring.</p>
+            <p className="mt-3 text-[15.5px] leading-relaxed text-black/65"><b className="break-all text-[#14392A]">{email}</b> manziliga tasdiqlash havolasini yubordik. Havola 30 daqiqa amal qiladi. Xat kelmasa, <b>Spam</b> papkasini ham tekshiring.</p>
             <div className="mt-6 space-y-3">
               <FormError message={err} />
               <SubmitButton variant="outline" type="button" disabled={timer.left > 0} loading={resend.isPending} onClick={() => resend.mutate(email)}>
@@ -96,11 +97,19 @@ export default function VerifyEmail() {
         )}
 
         {stage === 'success' && (
-          <motion.div key="ok" {...swap} className="py-4 text-center" role="status">
-            <SuccessCheck />
-            <p className="mt-6 text-[16px] text-black/65">Rahmat! Emailingiz muvaffaqiyatli tasdiqlandi. Endi profilingizni to‘ldiring, shunda hammasi tayyor bo‘ladi.</p>
-            <div className="mt-6"><SubmitButton type="button" onClick={go}>Profilni to‘ldirish <ArrowRight size={19} /></SubmitButton></div>
+          <motion.div key="ok" {...swap} className="py-2 text-center" role="status">
+            <PopImage src="/auth/check.png" className="w-36" />
+            <p className="mt-4 text-[16px] text-black/65">Ajoyib! Hisobingiz muvaffaqiyatli tasdiqlandi.</p>
+            <div className="mt-6"><SubmitButton type="button" onClick={() => setStage('profile')}>Davom etish <ArrowRight size={19} /></SubmitButton></div>
             <p className="mt-3 text-[13px] text-black/40">{Math.max(count, 0)} soniyadan keyin avtomatik o‘tiladi</p>
+          </motion.div>
+        )}
+
+        {stage === 'profile' && (
+          <motion.div key="pf" {...swap} className="py-2 text-center">
+            <PopImage src="/auth/clip.png" className="w-36" />
+            <p className="mt-4 text-[16px] text-black/65">Endi o‘zingiz va {role === 'parent' ? 'farzandingiz' : 'faoliyatingiz'} haqidagi ma‘lumotlarni kiriting.</p>
+            <div className="mt-6"><SubmitButton type="button" onClick={go}>Profilni to‘ldirish <ArrowRight size={19} /></SubmitButton></div>
           </motion.div>
         )}
 

@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { post } from '@/lib/api';
 import { errMsg } from '@/lib/format';
 import AuthShell from './AuthShell';
+import { PopImage } from './Envelope';
 import { FormError, PasswordField, PasswordStrength, SubmitButton, SuccessCheck } from './fields';
 import { ResetValues, resetSchema } from './schemas';
 
@@ -29,7 +30,7 @@ export default function ResetPassword() {
   useEffect(() => { if (stage !== 'ok') return; const t = setTimeout(() => router.replace('/login?reset=1'), 2600); return () => clearTimeout(t); }, [stage]); // eslint-disable-line
 
   return (
-    <AuthShell title={stage === 'ok' ? 'Parol yangilandi!' : stage === 'bad' ? 'Havola yaroqsiz' : 'Yangi parol yarating'} subtitle={stage === 'form' ? 'Kuchli va eslab qoladigan parol tanlang' : undefined} side="plain">
+    <AuthShell variant="card" title={stage === 'ok' ? 'Parol yangilandi!' : stage === 'bad' ? 'Havola yaroqsiz' : 'Yangi parol yarating'} subtitle={stage === 'form' ? 'Kuchli va eslab qoladigan parol tanlang' : undefined}>
       <AnimatePresence mode="wait">
         {stage === 'form' && (
           <motion.form key="f" {...swap} noValidate className="space-y-4" onSubmit={handleSubmit((v) => { setErr(''); m.mutate(v); })}>
@@ -41,7 +42,7 @@ export default function ResetPassword() {
         )}
         {stage === 'ok' && (
           <motion.div key="ok" {...swap} className="py-4 text-center" role="status">
-            <SuccessCheck />
+            <PopImage src="/auth/check.png" className="w-32" />
             <p className="mt-6 text-[16px] text-black/65">Parolingiz muvaffaqiyatli yangilandi. Kirish sahifasiga o‘tkazilmoqda…</p>
             <Link href="/login?reset=1" className="mt-5 inline-block text-[15px] font-bold text-primary underline-offset-4 hover:underline">Hozir kirish</Link>
           </motion.div>

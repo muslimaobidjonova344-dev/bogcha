@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { post } from '@/lib/api';
 import { errMsg } from '@/lib/format';
 import AuthShell, { rise } from './AuthShell';
-import Envelope from './Envelope';
+import Envelope, { PopImage } from './Envelope';
 import { FormError, SubmitButton, TextField } from './fields';
 import { ForgotValues, forgotSchema } from './schemas';
 import { useResendTimer } from './useResendTimer';
@@ -28,14 +28,15 @@ export default function ForgotPassword() {
   });
 
   return (
-    <AuthShell title={stage === 'form' ? 'Parolni tiklash' : 'Xat yuborildi'} subtitle={stage === 'form' ? 'Emailingizni kiriting, tiklash havolasini yuboramiz' : undefined} side="plain">
+    <AuthShell variant="card" title={stage === 'form' ? 'Parolni unutdingizmi?' : 'Xat yuborildi'} subtitle={stage === 'form' ? 'Emailingizni kiriting, sizga parolni tiklash havolasi yuboriladi.' : undefined}>
       <AnimatePresence mode="wait">
         {stage === 'form' ? (
           <motion.form key="f" {...swap} noValidate className="space-y-4" onSubmit={handleSubmit((v) => { setErr(''); m.mutate(v.email.trim()); })}>
             <TextField label="Email" type="email" autoComplete="email" inputMode="email" icon={<Mail size={19} />} error={errors.email?.message} {...register('email')} />
             <FormError message={err} />
-            <SubmitButton type="submit" loading={m.isPending}><Send size={18} />Havolani yuborish</SubmitButton>
-            <Link href="/login" className="flex items-center justify-center gap-1.5 pt-2 text-[15px] font-bold text-primary underline-offset-4 hover:underline"><ArrowLeft size={17} />Kirishga qaytish</Link>
+            <SubmitButton type="submit" loading={m.isPending}>Yuborish<Send size={18} /></SubmitButton>
+            <Link href="/login" className="flex items-center justify-center gap-1.5 pt-1 text-[15px] font-bold text-primary underline-offset-4 hover:underline"><ArrowLeft size={17} />Kirishga qaytish</Link>
+            <PopImage src="/auth/lock.png" className="w-44" />
           </motion.form>
         ) : (
           <motion.div key="s" {...swap} className="text-center" role="status" aria-live="polite">
