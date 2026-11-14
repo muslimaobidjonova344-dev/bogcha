@@ -19,6 +19,7 @@ services:
       - { key: COOKIE_SECURE, value: "true" }
       - { key: APPS_SCRIPT_URL, sync: false }
       - { key: APPS_SCRIPT_SECRET, sync: false }
+      - { key: GOOGLE_CLIENT_ID, sync: false }
       - { key: SUPABASE_URL, sync: false }
       - { key: SUPABASE_SERVICE_KEY, sync: false }
       - { key: SUPERADMIN_EMAIL, sync: false }

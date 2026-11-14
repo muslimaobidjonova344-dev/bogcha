@@ -43,3 +43,13 @@ git push -u origin main
 ```
 Agar push `ulugbekkamalov` nomidan ketayotgan bo'lsa — Windows **Credential Manager → Windows Credentials → git:https://github.com** yozuvini o'chiring va qayta push qiling (brauzerda kerakli akkauntga kirasiz). Yoki ulugbekkamalov repoga *Collaborator* sifatida qo'shilgan bo'lsa, shu akkaunt bilan ham push ishlaydi; commit muallifi esa yuqoridagi `user.name/email` bo'ladi.
 `.env` hech qachon gitga tushmaydi (`.gitignore`da).
+
+## 7. Google orqali kirish (bepul)
+1. https://console.cloud.google.com → yuqoridagi **Select a project → New project** → nom: `Kichkintoy`.
+2. **APIs & Services → OAuth consent screen**: *External* → App name `Kichkintoy`, support email va developer email (o'zingizniki) → Save. So'ng **Publish app** (Testing holatida faqat qo'shilgan test foydalanuvchilar kira oladi; kerakli scope'lar `email`, `profile`, `openid` oddiy, Google tekshiruvi talab qilmaydi).
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID** → Application type: **Web application**, nom `Kichkintoy web`.
+   - **Authorized JavaScript origins**: `https://kichkintoy-frontend.onrender.com` va lokal uchun `http://localhost:3000`.
+   - *Authorized redirect URIs* kerak emas (popup rejimi).
+4. Chiqqan **Client ID** (`....apps.googleusercontent.com`) ni nusxalang → Render → **kichkintoy-backend → Environment → `GOOGLE_CLIENT_ID`** → Save (servis qayta ishga tushadi). Client **Secret** kerak emas.
+5. Tekshiruv: `/login` sahifasida Google tugmasi chiqadi. Yangi foydalanuvchi birinchi marta kirganda hisob turini (ota-ona/bog'cha/repetitor) tanlaydi; mavjud emailga ega hisob bo'lsa, shu hisobga kiradi (Google emailni tasdiqlagan bo'ladi).
+Eslatma: 2FA yoqilgan hisoblar (masalan Super Admin) Google orqali kira olmaydi, faqat parol + 2FA kod bilan.

@@ -119,3 +119,45 @@ def test_login_by_phone_and_remember_cookie(client, make_user, db):
     client.cookies.clear()
     r = client.post("/api/v1/auth/login", json={"identifier": "+998909999999", "password": "Parol12345"})
     assert r.status_code == 401
+
+
+def _fake_google(monkeypatch, email="g@test.uz", name="Gulnora Karimova"):
+    from app.services import google_auth
+    monkeypatch.setattr(google_auth, "verify_id_token", lambda cred: {"email": email, "name": name, "sub": "123", "picture": None})
+
+
+def test_google_new_user_requires_role_then_creates(client, monkeypatch, db):
+    _fake_google(monkeypatch)
+    cred = "x" * 40
+    r = client.post("/api/v1/auth/google", json={"credential": cred})
+    assert r.status_code == 409 and r.json()["error"]["code"] == "role_required"
+    r = client.post("/api/v1/auth/google", json={"credential": cred, "role": "parent"})
+    assert r.status_code == 200 and r.json()["user"]["email"] == "g@test.uz"
+    u = db.query(User).filter(User.email == "g@test.uz").first()
+    assert u.email_verified is True and u.password_hash is None
+    client.cookies.clear()
+    # ikkinchi marta: rol so'ralmaydi, shu hisobga kiradi
+    r = client.post("/api/v1/auth/google", json={"credential": cred})
+    assert r.status_code == 200 and r.json()["user"]["role"] == "parent"
+
+
+def test_google_account_without_password_cannot_password_login(client, monkeypatch):
+    _fake_google(monkeypatch, "h@test.uz")
+    client.post("/api/v1/auth/google", json={"credential": "y" * 40, "role": "tutor"})
+    client.cookies.clear()
+    r = client.post("/api/v1/auth/login", json={"identifier": "h@test.uz", "password": "Parol12345"})
+    assert r.status_code == 401
+
+
+def test_google_blocked_and_unconfigured(client, monkeypatch, db):
+    r = client.post("/api/v1/auth/google", json={"credential": "z" * 40, "role": "parent"})
+    assert r.status_code == 503  # GOOGLE_CLIENT_ID sozlanmagan
+    assert client.get("/api/v1/auth/providers").json()["google_client_id"] is None
+    _fake_google(monkeypatch, "b@test.uz")
+    client.post("/api/v1/auth/google", json={"credential": "z" * 40, "role": "parent"})
+    u = db.query(User).filter(User.email == "b@test.uz").first()
+    u.is_active = False
+    db.commit()
+    client.cookies.clear()
+    r = client.post("/api/v1/auth/google", json={"credential": "z" * 40})
+    assert r.status_code == 403

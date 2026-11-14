@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     EMAIL_FROM_NAME: str = "Kichkintoy"
     EMAIL_TOKEN_MINUTES: int = 30
     RESET_TOKEN_MINUTES: int = 30
+    # Google orqali kirish (bepul): console.cloud.google.com -> OAuth Client ID (Web)
+    GOOGLE_CLIENT_ID: str = ""
     # Supabase Storage
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_KEY: str = ""

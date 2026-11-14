@@ -43,6 +43,7 @@ kapasitet bloklash (FOR UPDATE), repetitor bron oralig'i tekshiruvi, sharh faqat
 ## Ma'lum cheklovlar
 - Gmail MailApp kvotasi ~100 xat/kun (bepul akkaunt).
 - Rate limit va WebSocket bitta instansiya xotirasida (Render free: 1 instance).
+- Google orqali kirish `GOOGLE_CLIENT_ID` sozlangandan keyin ishlaydi (DEPLOY.md 7-bo‘lim).
 - SMS (Eskiz) sozlanmasa telefon OTP 503 qaytaradi (soxta muvaffaqiyat yo'q).
 - To'lov moduli yoqilmagan (daromad statistikasi o'tkazilgan darslar narxidan hisoblanadi).
 - Web Push uchun VAPID kalitlari kerak (ixtiyoriy).

@@ -8,9 +8,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { post } from '@/lib/api';
-import { errMsg } from '@/lib/format';
+import { ROLE_HOME, errMsg } from '@/lib/format';
 import AuthShell, { rise } from './AuthShell';
 import { Checkbox, FormError, PasswordField, PasswordStrength, SubmitButton, TextField } from './fields';
+import GoogleButton from './GoogleButton';
 import { RegisterValues, normPhone, registerSchema } from './schemas';
 
 const ROLES = [
@@ -38,6 +39,13 @@ export default function Register() {
       else if (e.code === 'weak_password') setError('password', { message: msg });
       else setFormErr(msg);
     },
+  });
+
+  const providerName = watch('provider_name');
+  const g = useMutation({
+    mutationFn: (credential: string) => post('/auth/google', { credential, role, provider_name: role === 'parent' ? undefined : providerName?.trim() || undefined, remember: true }),
+    onSuccess: (d: any) => { qc.clear(); router.replace(ROLE_HOME[d?.user?.role || role] || '/'); },
+    onError: (e: any) => setFormErr(errMsg(e)),
   });
 
   return (
@@ -81,6 +89,8 @@ export default function Register() {
         <FormError message={formErr} />
         <SubmitButton type="submit" loading={m.isPending}><UserPlus size={19} />Hisob yaratish</SubmitButton>
       </form>
+      <motion.div variants={rise} className="my-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-black/35"><span className="h-px flex-1 bg-black/10" />yoki<span className="h-px flex-1 bg-black/10" /></motion.div>
+      <GoogleButton label="Google bilan ro‘yxatdan o‘tish" onCredential={(c) => { setFormErr(''); g.mutate(c); }} disabled={g.isPending} />
       <motion.p variants={rise} className="mt-6 text-center text-[15px] text-black/60">Hisobingiz bormi? <Link href="/login" className="font-bold text-primary underline-offset-4 hover:underline">Kirish</Link></motion.p>
     </AuthShell>
   );

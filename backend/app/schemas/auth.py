@@ -111,3 +111,10 @@ class ProfileUpdate(BaseModel):
 
 class TotpEnableIn(BaseModel):
     code: str
+
+
+class GoogleIn(BaseModel):
+    credential: str = Field(min_length=20, max_length=4000)  # Google ID token (JWT)
+    role: str | None = Field(default=None, pattern="^(parent|kindergarten_admin|tutor)$")
+    provider_name: str | None = Field(default=None, max_length=200)
+    remember: bool = True

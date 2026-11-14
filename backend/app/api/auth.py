@@ -14,7 +14,8 @@ from app.models import (EmailVerificationToken, OtpCode, ParentProfile, Password
                         UserSession)
 from app.schemas.auth import *  # noqa
 from app.schemas.common import Msg
-from app.services import auth as auth_svc, email as email_svc, sms as sms_svc
+from app.core.config import settings
+from app.services import auth as auth_svc, email as email_svc, google_auth as google_svc, sms as sms_svc
 from app.services.audit import audit
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -62,6 +63,46 @@ def register(data: RegisterIn, request: Request, resp: Response, bg: BackgroundT
     out = _login_response(db, user, request, resp)
     bg.add_task(_send_verification, user.id, user.full_name, email, token)
     return out
+
+
+@router.get("/providers")
+def auth_providers():
+    """Frontend qaysi kirish usullari yoqilganini shu yerdan biladi (qayta build shart emas)."""
+    return {"google_client_id": settings.GOOGLE_CLIENT_ID or None}
+
+
+@router.post("/google")
+def google_login(data: GoogleIn, request: Request, resp: Response, db: Session = Depends(get_db)):
+    info = google_svc.verify_id_token(data.credential)
+    user = db.query(User).filter(User.email == info["email"], User.deleted_at.is_(None)).first()
+    if user:
+        if not user.is_active:
+            raise AppError(user.blocked_reason or "Hisobingiz bloklangan", 403, "blocked")
+        if user.totp_enabled:
+            raise AppError("Bu hisobda 2FA yoqilgan. Email va parol bilan kiring", 403, "use_password")
+        if not user.email_verified:
+            user.email_verified = True  # Google emailni allaqachon tasdiqlagan
+    else:
+        if not data.role:
+            # yangi foydalanuvchi: frontend rol tanlatib, qayta yuboradi
+            raise AppError("Hisob turini tanlang", 409, "role_required")
+        if data.role == "kindergarten_admin" and not (data.provider_name and data.provider_name.strip()):
+            raise AppError("Bog'cha nomini kiriting", 422, "provider_name_required")
+        user = User(email=info["email"], password_hash=None, role=data.role, full_name=info["name"][:150],
+                    email_verified=True, avatar_url=info.get("picture"))
+        db.add(user)
+        db.flush()
+        if data.role == "parent":
+            db.add(ParentProfile(user_id=user.id))
+            user.profile_completed = True
+        else:
+            ptype = "kindergarten" if data.role == "kindergarten_admin" else "tutor"
+            db.add(Provider(type=ptype, owner_user_id=user.id, name=(data.provider_name or info["name"]).strip(),
+                            email=info["email"], verification_status="pending"))
+        audit(db, user.id, "auth.register_google", "user", user.id, {"role": data.role}, client_ip(request))
+    user.last_login_at = now_utc()
+    audit(db, user.id, "auth.login_google", "user", user.id, ip=client_ip(request))
+    return _login_response(db, user, request, resp, data.remember)
 
 
 @router.post("/verify-email", response_model=Msg)
