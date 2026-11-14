@@ -14,3 +14,9 @@ frontend/_to_delete/
 .DS_Store
 frontend/tsconfig.tsbuildinfo
 frontend/next-env.d.ts
+
+# global .gitignore shablonlari (masalan Python) lib/ ni e'tiborsiz qoldirmasligi uchun:
+!frontend/lib/
+!frontend/lib/**
+!frontend/hooks/
+!frontend/hooks/**
