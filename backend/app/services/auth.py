@@ -36,9 +36,21 @@ def rotate_refresh(db: Session, refresh: str) -> tuple[User, str, str]:
     return user, access, new_refresh
 
 
+def _find_login_user(db: Session, ident: str) -> User | None:
+    ident = (ident or "").strip()
+    if "@" in ident:
+        return db.query(User).filter(User.email == ident.lower(), User.deleted_at.is_(None)).first()
+    from app.schemas.auth import norm_phone
+    try:
+        phone = norm_phone(ident)
+    except ValueError:
+        return None
+    return db.query(User).filter(User.phone == phone, User.deleted_at.is_(None)).first()
+
+
 def check_login(db: Session, email: str, password: str) -> User:
-    user = db.query(User).filter(User.email == email.lower(), User.deleted_at.is_(None)).first()
-    generic = AppError("Email yoki parol noto'g'ri", 401, "invalid_credentials")
+    user = _find_login_user(db, email)
+    generic = AppError("Email/telefon yoki parol noto'g'ri", 401, "invalid_credentials")
     if not user or not user.password_hash:
         raise generic
     if user.locked_until and user.locked_until > now_utc():

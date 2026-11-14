@@ -21,10 +21,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 log = logging.getLogger("auth")
 
 
-def _login_response(db: Session, user: User, request: Request, resp: Response) -> dict:
+def _login_response(db: Session, user: User, request: Request, resp: Response, remember: bool = True) -> dict:
     access, refresh = auth_svc.issue_session(db, user, client_ip(request), request.headers.get("user-agent"))
     db.commit()
-    set_auth_cookies(resp, access, refresh)
+    set_auth_cookies(resp, access, refresh, remember)
     # access/refresh ham qaytariladi: mobil ilovalar (Bearer) uchun
     return {"user": UserOut.model_validate(user), "access_token": access, "refresh_token": refresh}
 
@@ -93,7 +93,7 @@ def resend_verification(data: EmailIn, bg: BackgroundTasks, db: Session = Depend
 
 @router.post("/login")
 def login(data: LoginIn, request: Request, resp: Response, db: Session = Depends(get_db)):
-    user = auth_svc.check_login(db, data.email, data.password)
+    user = auth_svc.check_login(db, data.login_id, data.password)
     if user.totp_enabled:
         if not data.totp_code:
             db.commit()
@@ -102,7 +102,7 @@ def login(data: LoginIn, request: Request, resp: Response, db: Session = Depends
             db.commit()
             raise AppError("2FA kodi noto'g'ri", 401, "totp_invalid")
     audit(db, user.id, "auth.login", "user", user.id, ip=client_ip(request))
-    return _login_response(db, user, request, resp)
+    return _login_response(db, user, request, resp, data.remember)
 
 
 @router.post("/refresh")
@@ -115,7 +115,7 @@ def refresh(request: Request, resp: Response, db: Session = Depends(get_db)):
         raise Unauthorized("Sessiya topilmadi")
     user, access, new_refresh = auth_svc.rotate_refresh(db, token)
     db.commit()
-    set_auth_cookies(resp, access, new_refresh)
+    set_auth_cookies(resp, access, new_refresh, request.cookies.get("remember") == "1")
     return {"user": UserOut.model_validate(user), "access_token": access, "refresh_token": new_refresh}
 
 

@@ -31,9 +31,16 @@ class RegisterIn(BaseModel):
 
 
 class LoginIn(BaseModel):
-    email: EmailStr
+    """identifier — email YOKI telefon (+998...). `email` maydoni eski mijozlar uchun saqlangan."""
+    identifier: str | None = Field(default=None, max_length=150)
+    email: str | None = Field(default=None, max_length=150)
     password: str
     totp_code: str | None = None
+    remember: bool = True
+
+    @property
+    def login_id(self) -> str:
+        return (self.identifier or self.email or "").strip()
 
 
 class TokenIn(BaseModel):

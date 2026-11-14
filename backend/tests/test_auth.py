@@ -99,3 +99,23 @@ def test_csrf_header_required_with_cookie(client):
     assert r.status_code == 403 and r.json()["error"]["code"] == "csrf"
     r = client.post("/api/v1/children", json={"first_name": "A", "last_name": "B", "birth_date": "2022-01-01"}, headers={"X-Requested-With": "bogcha"})
     assert r.status_code == 201
+
+
+def test_login_by_phone_and_remember_cookie(client, make_user, db):
+    make_user("ph@test.uz")
+    u = db.query(User).filter(User.email == "ph@test.uz").first()
+    u.phone = "+998901234567"
+    db.commit()
+    client.cookies.clear()
+    r = client.post("/api/v1/auth/login", json={"identifier": "90 123 45 67", "password": "Parol12345", "remember": False})
+    assert r.status_code == 200
+    sc = r.headers.get_list("set-cookie")
+    rt = [c for c in sc if c.startswith("refresh_token=")][0]
+    assert "Max-Age" not in rt and "max-age" not in rt.lower()  # sessiya cookie'si
+    client.cookies.clear()
+    r = client.post("/api/v1/auth/login", json={"identifier": "ph@test.uz", "password": "Parol12345", "remember": True})
+    assert r.status_code == 200
+    assert any("remember=1" in c for c in r.headers.get_list("set-cookie"))
+    client.cookies.clear()
+    r = client.post("/api/v1/auth/login", json={"identifier": "+998909999999", "password": "Parol12345"})
+    assert r.status_code == 401
