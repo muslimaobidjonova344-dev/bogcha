@@ -7,6 +7,8 @@ import { ReactNode } from 'react';
 export const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.08 } } };
 export const rise = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } } };
 
+export const riseIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } } as const;
+
 export function Logo({ className = '' }: { className?: string }) {
   return (
     <Link href="/" className={`inline-flex items-center gap-2.5 ${className}`} aria-label="Kichkintoy bosh sahifa">
@@ -80,6 +82,35 @@ function Hero() {
   );
 }
 
+
+function Float({ src, className, rot = 0, delay = 0, round = 'rounded-3xl', pad = 'p-2' }: { src: string; className: string; rot?: number; delay?: number; round?: string; pad?: string }) {
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 + delay * 0.12, duration: 0.5 }} className={`absolute ${className}`}>
+      <motion.div animate={{ y: [0, -9, 0], rotate: [rot, rot + 1.5, rot] }} transition={{ duration: 5 + delay, repeat: Infinity, ease: 'easeInOut' }}
+        className={`overflow-hidden bg-white shadow-[0_18px_40px_-18px_rgba(20,57,42,.45)] ring-1 ring-black/5 ${round} ${pad}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt="" aria-hidden className={`h-full w-full object-cover ${round}`} />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/** Faqat keng ekranlarda: karta atrofidagi mavzuli rasmlar (bog'cha, bolalar, oila, repetitor, xat). */
+function Decor() {
+  return (
+    <div aria-hidden className="pointer-events-none hidden min-[1360px]:block">
+      <Float src="/auth/role_school.png" className="right-full top-6 mr-10 h-40 w-44" rot={-5} delay={0} />
+      <Float src="/auth/hero-kids.jpg" className="right-full top-[260px] mr-14 h-48 w-56" rot={4} delay={1} />
+      <Float src="/auth/env_open.png" className="right-full top-[500px] mr-6 h-32 w-36" rot={-3} delay={2} round="rounded-full" pad="p-3" />
+      <Float src="/auth/role_parent.png" className="left-full top-10 ml-10 h-40 w-44" rot={5} delay={1} />
+      <Float src="/auth/role_tutor.png" className="left-full top-[250px] ml-14 h-44 w-44" rot={-4} delay={2} />
+      <Float src="/auth/lock.png" className="left-full top-[490px] ml-8 h-32 w-44" rot={3} delay={0} />
+      <motion.svg viewBox="0 0 40 40" className="absolute -left-8 -top-6 h-10 w-10" animate={{ rotate: [0, 20, 0] }} transition={{ duration: 6, repeat: Infinity }}><path d="M20 2l5 13 13 5-13 5-5 13-5-13L2 20l13-5z" fill="#E9C768" /></motion.svg>
+      <motion.svg viewBox="0 0 40 40" className="absolute -bottom-6 -right-8 h-8 w-8" animate={{ rotate: [0, -20, 0] }} transition={{ duration: 7, repeat: Infinity }}><path d="M20 2l5 13 13 5-13 5-5 13-5-13L2 20l13-5z" fill="#F4C7A8" /></motion.svg>
+    </div>
+  );
+}
+
 /** variant="hero": login (chapda foto va afzalliklar, o'ngda suzuvchi karta). variant="card": markazdagi premium karta. */
 export default function AuthShell({ children, title, subtitle, variant = 'card', wide, step, emoji, side }: { children: ReactNode; title?: string; subtitle?: string; variant?: 'hero' | 'card'; wide?: boolean; step?: 1 | 2 | 3; emoji?: string; side?: string }) {
   const head = title && (
@@ -109,9 +140,12 @@ export default function AuthShell({ children, title, subtitle, variant = 'card',
     );
   }
   return (
-    <div className="flex min-h-screen flex-col items-center bg-[radial-gradient(900px_500px_at_50%_-10%,#E4EEDF,transparent),radial-gradient(700px_400px_at_100%_100%,#F9E7D6,transparent)] bg-bg px-4 py-8 sm:py-12">
+    <div className="flex min-h-screen flex-col items-center overflow-hidden bg-[radial-gradient(900px_500px_at_50%_-10%,#E4EEDF,transparent),radial-gradient(700px_400px_at_100%_100%,#F9E7D6,transparent)] bg-bg px-4 py-8 sm:py-12">
       <Logo className="mb-6" />
-      <div className={`w-full ${wide ? 'max-w-[760px]' : 'max-w-[480px]'} rounded-[28px] border border-white bg-white/95 p-6 shadow-[0_30px_70px_-30px_rgba(20,57,42,.35)] sm:p-10`}>{body}</div>
+      <div className={`relative w-full ${wide ? 'max-w-[760px]' : 'max-w-[480px]'}`}>
+        <Decor />
+        <div className="relative rounded-[28px] border border-white bg-white/95 p-6 shadow-[0_30px_70px_-30px_rgba(20,57,42,.35)] sm:p-10">{body}</div>
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Async, Button, Card, Confirm, Empty, Field, Modal, PageTitle, Paginatio
 import { useMe } from '@/hooks/useAuth';
 import { del, get, patch, post, put } from '@/lib/api';
 import { APP_STATUS, dmy, dmyHm, errMsg } from '@/lib/format';
+import { ContractPanel } from './Contracts';
 import ProviderCard from './ProviderCard';
 
 /* ---------- Dashboard ---------- */
@@ -18,7 +19,19 @@ export function ParentDashboard() {
   const q = useQuery({ queryKey: ['parent-dashboard'], queryFn: () => get('/parents/dashboard') });
   return (
     <>
-      <PageTitle title={`Assalomu alaykum, ${(me.data?.full_name || '').split(' ')[0]}!`} sub="Farzandingiz uchun eng mos ta‘limni toping" />
+      <section className="relative mb-6 overflow-hidden rounded-3xl border border-black/5 bg-gradient-to-r from-[#EEF5F1] via-[#F6F3E6] to-[#FCEBDD] shadow-card">
+        <div className="relative z-10 max-w-xl p-6 sm:p-9">
+          <h1 className="text-[28px] font-extrabold leading-tight text-[#14392A] sm:text-[34px]">Xush kelibsiz, {(me.data?.full_name || '').replace('[DEMO] ', '').split(' ')[0]}! <span aria-hidden>👋</span></h1>
+          <p className="mt-2 text-[16px] text-black/60">Farzandingiz uchun eng yaxshi ta‘lim imkoniyatlarini bir joyda toping, solishtiring va ariza yuboring.</p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/parent/search" className="btn btn-primary">Bog‘cha qidirish</Link>
+            <Link href="/parent/search?type=tutor" className="btn btn-outline">Repetitor topish</Link>
+            <Link href="/parent/map" className="btn btn-outline">Xaritada ko‘rish</Link>
+          </div>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/auth/hero-kids.jpg" alt="" aria-hidden className="absolute inset-y-0 right-0 hidden h-full w-[46%] object-cover object-[50%_30%] [mask-image:linear-gradient(to_right,transparent,#000_35%)] md:block" />
+      </section>
       <Async q={q} rows={3}>
         {(d) => (
           <div className="space-y-6">
@@ -147,6 +160,7 @@ export function ApplicationDetail({ id }: { id: string }) {
               {a.parent_note && <div className="sm:col-span-2"><dt className="text-black/50">Izohingiz</dt><dd>{a.parent_note}</dd></div>}
               {a.provider_note && <div className="sm:col-span-2 rounded-xl bg-sun-light p-3"><dt className="text-black/50">Muassasa izohi</dt><dd className="font-medium">{a.provider_note}</dd></div>}</dl></Card>
             {a.status === 'MORE_INFO_REQUIRED' && <Card><h3 className="mb-2 font-bold text-primary">Qo‘shimcha ma‘lumot yuboring</h3><textarea className="input" rows={3} value={reply} onChange={(e) => setReply(e.target.value)} /><Button className="mt-2" disabled={!reply.trim()} loading={rp.isPending} onClick={() => rp.mutate()}>Yuborish</Button></Card>}
+            <ContractPanel applicationId={id} status={a.status} role="parent" base="/parent" />
             <Card><h3 className="mb-3 font-bold text-primary">Holatlar tarixi</h3><ol className="space-y-3 border-l-2 border-primary/20 pl-4">{a.history.map((h: any, i: number) => (
               <li key={i} className="relative"><span className="absolute -left-[22px] top-1 h-3 w-3 rounded-full bg-primary" /><div className="flex flex-wrap items-center gap-2"><StatusBadge status={h.to_status} /><span className="text-xs text-black/45">{dmyHm(h.created_at)}</span></div>{h.note && <p className="mt-1 text-sm text-black/65">{h.note}</p>}</li>))}</ol></Card>
             <div className="flex flex-wrap gap-2">

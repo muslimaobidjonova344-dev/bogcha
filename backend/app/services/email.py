@@ -2,7 +2,7 @@
 import logging
 import httpx
 from app.core.config import settings
-from app.services.email_templates import render_button_email
+from app.services.email_templates import render_button_email, render_code_email
 
 log = logging.getLogger("email")
 
@@ -28,6 +28,13 @@ def send_verification_email(to: str, name: str, token: str) -> bool:
         "Kichkintoy platformasida ro'yxatdan o'tganingiz uchun rahmat. Quyidagi tugma orqali emailingizni tasdiqlang.",
         "Emailni tasdiqlash", link, settings.EMAIL_TOKEN_MINUTES)
     return _send(to, "Emailingizni tasdiqlang — Kichkintoy", html)
+
+
+def send_verification_code_email(to: str, name: str, code: str) -> bool:
+    html = render_code_email(name, "Emailingizni tasdiqlang",
+                             "Kichkintoy platformasida ro'yxatdan o'tganingiz uchun rahmat. Tasdiqlash kodini saytdagi maydonga kiriting.",
+                             code, settings.EMAIL_TOKEN_MINUTES)
+    return _send(to, f"{code} — Kichkintoy tasdiqlash kodi", html)
 
 
 def send_password_reset_email(to: str, name: str, token: str) -> bool:

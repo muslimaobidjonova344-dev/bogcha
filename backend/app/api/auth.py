@@ -30,9 +30,9 @@ def _login_response(db: Session, user: User, request: Request, resp: Response, r
     return {"user": UserOut.model_validate(user), "access_token": access, "refresh_token": refresh}
 
 
-def _send_verification(user_id: str, name: str, email: str, token: str):
+def _send_verification(user_id: str, name: str, email: str, code: str):
     try:
-        email_svc.send_verification_email(email, name, token)
+        email_svc.send_verification_code_email(email, name, code)
     except Exception:
         log.exception("Tasdiqlash emaili yuborilmadi")
 
@@ -58,10 +58,12 @@ def register(data: RegisterIn, request: Request, resp: Response, bg: BackgroundT
         ptype = "kindergarten" if data.role == "kindergarten_admin" else "tutor"
         db.add(Provider(type=ptype, owner_user_id=user.id, name=data.provider_name or data.full_name,
                         phone=data.phone, email=email, verification_status="pending"))
-    token = auth_svc.create_email_token(db, user)
+    code = auth_svc.create_email_code(db, user)
     audit(db, user.id, "auth.register", "user", user.id, {"role": data.role}, client_ip(request))
     out = _login_response(db, user, request, resp)
-    bg.add_task(_send_verification, user.id, user.full_name, email, token)
+    bg.add_task(_send_verification, user.id, user.full_name, email, code)
+    if settings.EMAIL_DEV_ECHO and not settings.is_prod:
+        out["dev_code"] = code  # faqat lokal sinov: email sozlanmagan bo'lsa
     return out
 
 
@@ -118,6 +120,17 @@ def verify_email(data: TokenIn, db: Session = Depends(get_db)):
     return Msg(message="Email tasdiqlandi")
 
 
+@router.post("/verify-code", response_model=Msg)
+def verify_code(data: CodeIn, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email.lower(), User.deleted_at.is_(None)).first()
+    if not user or not auth_svc.check_email_code(db, user, data.code):
+        raise AppError("Kod noto'g'ri yoki muddati tugagan", 400, "invalid_code")
+    user.email_verified = True
+    audit(db, user.id, "auth.email_verified", "user", user.id)
+    db.commit()
+    return Msg(message="Email tasdiqlandi")
+
+
 @router.post("/resend-verification", response_model=Msg)
 def resend_verification(data: EmailIn, bg: BackgroundTasks, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email.lower()).first()
@@ -126,10 +139,10 @@ def resend_verification(data: EmailIn, bg: BackgroundTasks, db: Session = Depend
             .order_by(EmailVerificationToken.created_at.desc()).first()
         if last and last.created_at > now_utc() - timedelta(seconds=60):
             raise AppError("Iltimos, 1 daqiqadan so'ng qayta urinib ko'ring", 429, "too_soon")
-        token = auth_svc.create_email_token(db, user)
+        code = auth_svc.create_email_code(db, user)
         db.commit()
-        bg.add_task(_send_verification, user.id, user.full_name, user.email, token)
-    return Msg(message="Agar email ro'yxatdan o'tgan bo'lsa, tasdiqlash xati yuborildi")
+        bg.add_task(_send_verification, user.id, user.full_name, user.email, code)
+    return Msg(message="Agar email ro'yxatdan o'tgan bo'lsa, tasdiqlash kodi yuborildi")
 
 
 @router.post("/login")

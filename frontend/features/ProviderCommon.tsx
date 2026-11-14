@@ -4,9 +4,11 @@ import { Upload } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Async, Badge, Button, Card, Empty, Field, Modal, PageTitle, Pagination, StatCard, StatusBadge, Stars, Tabs, VerifyBadge, useToast, Skeleton } from '@/components/ui/ui';
+import { useMe } from '@/hooks/useAuth';
 import { get, post, put, uploadFile } from '@/lib/api';
 import { APP_STATUS, WEEKDAYS, dmy, dmyHm, errMsg, uzs } from '@/lib/format';
 
+import { ContractPanel } from './Contracts';
 export function useMyProvider() { return useQuery({ queryKey: ['my-provider'], queryFn: () => get('/me/provider') }); }
 
 export function VerificationBanner() {
@@ -45,6 +47,7 @@ export function ProviderApplications({ base, title = 'Arizalar', onlyStatus }: {
 }
 
 export function ProviderApplicationDetail({ id }: { id: string }) {
+  const me = useMe();
   const qc = useQueryClient(); const toast = useToast();
   const q = useQuery({ queryKey: ['prov-app', id], queryFn: () => get(`/me/provider/applications/${id}`) });
   const [act, setAct] = useState<string | null>(null); const [note, setNote] = useState(''); const [when, setWhen] = useState('');
@@ -75,6 +78,7 @@ export function ProviderApplicationDetail({ id }: { id: string }) {
             <div><dt className="text-black/50">Qiziqishlar</dt><dd>{(a.child.interests || []).join(', ') || '—'}</dd></div><div><dt className="text-black/50">Ota-ona izohi</dt><dd>{a.child.parent_note || '—'}</dd></div>
             <div className="sm:col-span-2"><dt className="text-black/50">Qo‘shimcha ma‘lumot</dt><dd>{a.child.extra_info ?? <i className="text-black/40">Ariza qabul qilingandan keyin ko‘rinadi</i>}</dd></div></dl></Card>
           <Card><h3 className="mb-2 font-bold text-primary">Ota-ona</h3><div className="text-sm"><b>{a.parent.full_name}</b> · {a.parent.phone || <i className="text-black/40">Telefon suhbat belgilangach / qabul qilingach ko‘rinadi</i>}</div></Card>
+          <ContractPanel applicationId={id} status={a.status} role="provider" base={me.data?.role === 'tutor' ? '/tutor' : '/kindergarten'} />
           {actions[a.status] && <Card><h3 className="mb-2 font-bold text-primary">Amallar</h3><div className="flex flex-wrap gap-2">{actions[a.status].map((x) => <Button key={x.k} variant={x.v} onClick={() => { setAct(x.k); setNote(''); setWhen(''); }}>{x.label}</Button>)}</div></Card>}
           <Card><h3 className="mb-3 font-bold text-primary">Holatlar tarixi</h3><ol className="space-y-3 border-l-2 border-primary/20 pl-4">{a.history.map((h: any, i: number) => (<li key={i} className="relative"><span className="absolute -left-[22px] top-1 h-3 w-3 rounded-full bg-primary" /><div className="flex items-center gap-2"><StatusBadge status={h.to_status} /><span className="text-xs text-black/45">{dmyHm(h.created_at)}</span></div>{h.note && <p className="mt-1 text-sm text-black/65">{h.note}</p>}</li>))}</ol></Card>
           <Modal open={!!act} onClose={() => setAct(null)} title={act ? APP_STATUS[act]?.label : ''}>

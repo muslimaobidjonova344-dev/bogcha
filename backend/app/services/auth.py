@@ -79,6 +79,37 @@ def create_email_token(db: Session, user: User) -> str:
     return token
 
 
+CODE_MAX_ATTEMPTS = 5
+
+
+def _code_hash(user_id: str, code: str) -> str:
+    return hash_token(f"{user_id}:{code}")
+
+
+def create_email_code(db: Session, user: User) -> str:
+    """6 xonali tasdiqlash kodi. Eski kodlar bekor qilinadi; noto'g'ri urinishlar soni cheklanadi."""
+    import secrets
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    db.query(EmailVerificationToken).filter(EmailVerificationToken.user_id == user.id,
+                                            EmailVerificationToken.used_at.is_(None)).update({"used_at": now_utc()})
+    db.add(EmailVerificationToken(user_id=user.id, token_hash=_code_hash(user.id, code),
+                                  expires_at=now_utc() + timedelta(minutes=settings.EMAIL_TOKEN_MINUTES)))
+    return code
+
+
+def check_email_code(db: Session, user: User, code: str) -> bool:
+    t = db.query(EmailVerificationToken).filter(EmailVerificationToken.user_id == user.id, EmailVerificationToken.used_at.is_(None)) \
+        .order_by(EmailVerificationToken.created_at.desc()).first()
+    if not t or t.expires_at < now_utc() or t.attempts >= CODE_MAX_ATTEMPTS:
+        return False
+    if t.token_hash != _code_hash(user.id, code.strip()):
+        t.attempts += 1
+        db.commit()
+        return False
+    t.used_at = now_utc()
+    return True
+
+
 def create_reset_token(db: Session, user: User) -> str:
     token = new_token()
     db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user.id,

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     APPS_SCRIPT_SECRET: str = ""
     EMAIL_FROM_NAME: str = "Kichkintoy"
     EMAIL_TOKEN_MINUTES: int = 30
+    EMAIL_DEV_ECHO: bool = False  # True bo'lsa (prod emas) register javobida dev_code qaytadi
     RESET_TOKEN_MINUTES: int = 30
     # Google orqali kirish (bepul): console.cloud.google.com -> OAuth Client ID (Web)
     GOOGLE_CLIENT_ID: str = ""

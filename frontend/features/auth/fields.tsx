@@ -2,7 +2,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, Check, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { forwardRef, InputHTMLAttributes, ReactNode, useId, useState } from 'react';
-import { rise } from './AuthShell';
+import { riseIn } from './AuthShell';
 import { passwordScore } from './schemas';
 
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; icon?: ReactNode; hint?: string; trailing?: ReactNode; noAnim?: boolean };
@@ -13,7 +13,7 @@ export const TextField = forwardRef<HTMLInputElement, FieldProps>(function TextF
   const [focus, setFocus] = useState(false);
   const Wrap: any = noAnim ? 'div' : motion.div;
   return (
-    <Wrap {...(noAnim ? {} : { variants: rise })}>
+    <Wrap {...(noAnim ? {} : riseIn)}>
       <div className={`group relative rounded-2xl border bg-white transition-all duration-200 ${error ? 'border-red-400 ring-4 ring-red-100' : focus ? 'border-primary ring-4 ring-primary/15' : 'border-black/10 hover:border-primary/40'}`}>
         {icon && <span className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${focus ? 'text-primary' : 'text-black/35'}`}>{icon}</span>}
         <input
@@ -67,7 +67,7 @@ export function PasswordStrength({ value }: { value: string }) {
 export const Checkbox = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { label: ReactNode; error?: string }>(function Checkbox({ label, error, ...rest }, ref) {
   const id = useId();
   return (
-    <motion.div variants={rise}>
+    <motion.div {...riseIn}>
       <label htmlFor={id} className="flex cursor-pointer select-none items-start gap-3 py-1">
         <input id={id} ref={ref} type="checkbox" className="peer sr-only" {...rest} />
         <span className={`mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md border-2 bg-white transition-all duration-150 peer-focus-visible:ring-4 peer-focus-visible:ring-primary/25 peer-checked:border-primary peer-checked:bg-primary [&>svg]:scale-0 peer-checked:[&>svg]:scale-100 ${error ? 'border-red-400' : 'border-black/25'}`}>
@@ -84,7 +84,7 @@ export const Checkbox = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInp
 export function SubmitButton({ children, loading, success, disabled, variant = 'primary', ...rest }: { children: ReactNode; loading?: boolean; success?: boolean; disabled?: boolean; variant?: 'primary' | 'outline' } & Omit<React.ComponentProps<typeof motion.button>, 'children' | 'disabled'>) {
   const base = variant === 'primary' ? 'bg-primary text-white shadow-[0_8px_20px_-6px_rgba(36,92,67,.55)] hover:bg-primary-600' : 'border border-primary/30 bg-white text-primary hover:bg-primary-50';
   return (
-    <motion.button variants={rise} whileHover={disabled || loading ? undefined : { y: -1 }} whileTap={disabled || loading ? undefined : { scale: 0.97 }} disabled={disabled || loading}
+    <motion.button {...riseIn} whileHover={disabled || loading ? undefined : { y: -1 }} whileTap={disabled || loading ? undefined : { scale: 0.97 }} disabled={disabled || loading}
       className={`relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl text-[16px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${base}`} {...rest}>
       <AnimatePresence mode="wait" initial={false}>
         {loading ? <motion.span key="l" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2"><Loader2 className="animate-spin" size={20} />Iltimos, kuting…</motion.span>

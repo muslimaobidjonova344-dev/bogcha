@@ -53,3 +53,15 @@ Agar push `ulugbekkamalov` nomidan ketayotgan bo'lsa — Windows **Credential Ma
 4. Chiqqan **Client ID** (`....apps.googleusercontent.com`) ni nusxalang → Render → **kichkintoy-backend → Environment → `GOOGLE_CLIENT_ID`** → Save (servis qayta ishga tushadi). Client **Secret** kerak emas.
 5. Tekshiruv: `/login` sahifasida Google tugmasi chiqadi. Yangi foydalanuvchi birinchi marta kirganda hisob turini (ota-ona/bog'cha/repetitor) tanlaydi; mavjud emailga ega hisob bo'lsa, shu hisobga kiradi (Google emailni tasdiqlagan bo'ladi).
 Eslatma: 2FA yoqilgan hisoblar (masalan Super Admin) Google orqali kira olmaydi, faqat parol + 2FA kod bilan.
+
+## 8. Sinov (demo) ma'lumotlari va email kodi
+
+**Demo ma'lumotlar** (6 bog'cha, 5 repetitor, 2 ota-ona, barcha holatdagi arizalar, sharhlar, suhbatlar, bildirishnomalar, ikkita shartnoma):
+Render → kichkintoy-backend → Environment: `SEED_DEMO=1` va `ALLOW_DEMO_IN_PROD=1` qo'shing, keyin **Manual Deploy**.
+Seed idempotent: qayta ishga tushirsa takrorlamaydi. Demo hisoblar (parol `Demo12345`):
+`demo.parent@example.com`, `demo.parent2@example.com`, `demo.kg1..6@example.com`, `demo.tutor1..5@example.com`.
+Haqiqiy foydalanuvchilar uchun ochishdan oldin ikkala o'zgaruvchini o'chiring va demo yozuvlarni admin panelidan olib tashlang.
+
+**Email tasdiqlash kodi:** ro'yxatdan o'tgach 6 xonali kod Apps Script orqali yuboriladi (30 daqiqa, 5 ta urinish). Apps Script hali sozlanmagan bo'lsa,
+lokal sinov uchun backendda `EMAIL_DEV_ECHO=1` (faqat ENV != production) qo'ying: kod sahifada ko'rinadi.
+Eslatma: bazaga yangi jadval/ustun qo'shilgani uchun deploy paytida `alembic upgrade head` (0002) avtomatik ishlaydi.

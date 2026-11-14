@@ -71,7 +71,7 @@ export default function AppShell({ roles, nav, tabs, base, children }: { roles: 
   return (
     <div className="min-h-screen lg:flex">
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-black/5 bg-white p-4 lg:flex">
+      <aside className="sticky top-0 hidden h-screen print:!hidden w-64 shrink-0 flex-col border-r border-black/5 bg-white p-4 lg:flex">
         <Logo />
         <div className="mt-1 text-xs font-semibold text-secondary">{ROLE_LABEL[me.data.role]}</div>
         <div className="mt-4 flex-1 overflow-y-auto pr-1"><NavList /></div>
@@ -80,7 +80,7 @@ export default function AppShell({ roles, nav, tabs, base, children }: { roles: 
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
-        <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-black/5 bg-bg/90 px-4 py-3 backdrop-blur">
+        <header className="sticky top-0 z-40 print:hidden flex items-center gap-3 border-b border-black/5 bg-bg/90 px-4 py-3 backdrop-blur">
           <button className="rounded-xl p-2 hover:bg-black/5 lg:hidden" onClick={() => setDrawer(true)} aria-label="Menyu"><Menu size={22} /></button>
           <div className="lg:hidden"><Logo /></div>
           <div className="ml-auto flex items-center gap-2">
@@ -107,7 +107,7 @@ export default function AppShell({ roles, nav, tabs, base, children }: { roles: 
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-black/10 bg-white lg:hidden" aria-label="Pastki menyu">
+      <nav className="pb-safe print:hidden fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-black/10 bg-white lg:hidden" aria-label="Pastki menyu">
         {tabs.map((t) => {
           const Icon = t.icon; const a = active(t.href);
           return (

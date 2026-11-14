@@ -9,9 +9,8 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { post } from '@/lib/api';
 import { ROLE_HOME, errMsg } from '@/lib/format';
-import AuthShell, { rise } from './AuthShell';
+import AuthShell, { riseIn } from './AuthShell';
 import { Checkbox, FormError, PasswordField, PasswordStrength, SubmitButton, TextField } from './fields';
-import GoogleButton from './GoogleButton';
 import { RegisterValues, normPhone, registerSchema } from './schemas';
 
 const ROLES = [
@@ -34,7 +33,7 @@ export default function Register() {
 
   const m = useMutation({
     mutationFn: (v: RegisterValues) => post('/auth/register', { role: v.role, full_name: `${v.first_name.trim()} ${v.last_name.trim()}`, email: v.email.trim(), phone: normPhone(v.phone), password: v.password, provider_name: v.role === 'parent' ? undefined : v.provider_name?.trim() || undefined }),
-    onSuccess: (d: any, v) => { qc.clear(); try { sessionStorage.setItem('kt_verify_sent_at', String(Date.now())); } catch {} router.replace(`/verify-email?sent=1&email=${encodeURIComponent(v.email.trim())}&role=${d?.user?.role || v.role}`); },
+    onSuccess: (d: any, v) => { qc.clear(); try { sessionStorage.setItem('kt_verify_sent_at', String(Date.now())); if (d?.dev_code) sessionStorage.setItem('kt_dev_code', d.dev_code); } catch {} router.replace(`/verify-email?sent=1&email=${encodeURIComponent(v.email.trim())}&role=${d?.user?.role || v.role}`); },
     onError: (e: any) => {
       const msg = errMsg(e);
       if (e.status === 409 && /email/i.test(msg)) setError('email', { message: msg });
@@ -42,13 +41,6 @@ export default function Register() {
       else if (e.code === 'weak_password') setError('password', { message: msg });
       else setFormErr(msg);
     },
-  });
-
-  const providerName = watch('provider_name');
-  const g = useMutation({
-    mutationFn: (credential: string) => post('/auth/google', { credential, role, provider_name: role === 'parent' ? undefined : providerName?.trim() || undefined, remember: true }),
-    onSuccess: (d: any) => { qc.clear(); router.replace(ROLE_HOME[d?.user?.role || role] || '/'); },
-    onError: (e: any) => setFormErr(errMsg(e)),
   });
 
   return (
@@ -100,9 +92,7 @@ export default function Register() {
               <FormError message={formErr} />
               <SubmitButton type="submit" loading={m.isPending}>Hisob yaratish<Check size={19} strokeWidth={3} /></SubmitButton>
             </form>
-            <motion.div variants={rise} className="my-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-black/35"><span className="h-px flex-1 bg-black/10" />yoki<span className="h-px flex-1 bg-black/10" /></motion.div>
-            <GoogleButton label="Google bilan ro‘yxatdan o‘tish" onCredential={(c) => { setFormErr(''); g.mutate(c); }} disabled={g.isPending} />
-            <button type="button" onClick={() => setStep(1)} className="mx-auto mt-5 flex items-center gap-1.5 text-[15px] font-bold text-primary underline-offset-4 hover:underline"><ArrowLeft size={17} />Rolni o‘zgartirish</button>
+            <button type="button" onClick={() => setStep(1)} className="mx-auto mt-6 flex items-center gap-1.5 text-[15px] font-bold text-primary underline-offset-4 hover:underline"><ArrowLeft size={17} />Rolni o‘zgartirish</button>
           </motion.div>
         )}
       </AnimatePresence>

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
-from app.api import admin, applications, auth, catalog, chat, files, notifications, parents, provider_manage, provider_ops, reviews
+from app.api import admin, applications, auth, catalog, chat, contracts, files, notifications, parents, provider_manage, provider_ops, reviews
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.errors import install_error_handlers
@@ -40,7 +40,7 @@ app.add_middleware(CORSMiddleware, allow_origins=settings.cors_list, allow_crede
 
 api = APIRouter(prefix="/api/v1")
 for r in (auth.router, catalog.router, parents.router, provider_manage.router, provider_ops.router, applications.router,
-          chat.router, notifications.router, reviews.router, files.router, admin.router):
+          chat.router, contracts.router, notifications.router, reviews.router, files.router, admin.router):
     api.include_router(r)
 app.include_router(api)
 

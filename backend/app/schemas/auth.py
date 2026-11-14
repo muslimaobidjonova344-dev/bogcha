@@ -47,6 +47,11 @@ class TokenIn(BaseModel):
     token: str
 
 
+class CodeIn(BaseModel):
+    email: EmailStr
+    code: str = Field(pattern=r"^\d{6}$")
+
+
 class EmailIn(BaseModel):
     email: EmailStr
 
