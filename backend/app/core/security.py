@@ -8,7 +8,8 @@ from argon2.exceptions import VerifyMismatchError, InvalidHashError
 
 from app.core.config import settings
 
-_ph = PasswordHasher()  # Argon2id
+# Argon2id (OWASP tavsiyasi: 19 MiB, 2 iteratsiya) — bepul serverda xotira va CPU'ni tejaydi
+_ph = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1)
 
 
 def hash_password(password: str) -> str:
@@ -19,6 +20,13 @@ def verify_password(password: str, hashed: str) -> bool:
     try:
         return _ph.verify(hashed, password)
     except (VerifyMismatchError, InvalidHashError):
+        return False
+
+
+def needs_rehash(hashed: str) -> bool:
+    try:
+        return _ph.check_needs_rehash(hashed)
+    except Exception:
         return False
 
 

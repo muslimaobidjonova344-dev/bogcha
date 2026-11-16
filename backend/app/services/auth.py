@@ -2,7 +2,7 @@ from datetime import timedelta
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.errors import AppError, Unauthorized
-from app.core.security import (create_access_token, hash_token, new_token, now_utc, verify_password)
+from app.core.security import (create_access_token, hash_password, hash_token, needs_rehash, new_token, now_utc, verify_password)
 from app.models import (EmailVerificationToken, PasswordResetToken, User, UserSession)
 
 MAX_FAILED = 5
@@ -67,6 +67,8 @@ def check_login(db: Session, email: str, password: str) -> User:
     user.failed_logins = 0
     user.locked_until = None
     user.last_login_at = now_utc()
+    if needs_rehash(user.password_hash):  # eski (og'ir) parametrli hash -> yengil parametrga yangilanadi
+        user.password_hash = hash_password(password)
     return user
 
 
