@@ -1,11 +1,12 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { Bell, LogOut, Menu, Sprout } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useState } from 'react';
+import { Avatar, cleanName } from '@/components/ui/Art';
 import { Drawer, Skeleton } from '@/components/ui/ui';
 import { useLogout, useRequireRole } from '@/hooks/useAuth';
 import { useRealtime } from '@/hooks/useWs';
@@ -88,14 +89,13 @@ export default function AppShell({ roles, nav, tabs, base, children }: { roles: 
               <Bell size={20} />{badges.notifications > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-peach ring-2 ring-white" />}
             </Link>
             <div className="hidden items-center gap-2 sm:flex">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-secondary-light font-bold text-primary">{(me.data.full_name || '?').charAt(0)}</div>
-              <div className="leading-tight"><div className="text-sm font-bold">{me.data.full_name}</div><div className="text-xs text-black/50">{ROLE_LABEL[me.data.role]}</div></div>
+              <Avatar name={me.data.full_name} id={me.data.id} src={(me.data as any).avatar_url} size={36} />
+              <div className="leading-tight"><div className="text-sm font-bold">{cleanName(me.data.full_name)}</div><div className="text-xs text-black/50">{ROLE_LABEL[me.data.role]}</div></div>
             </div>
           </div>
         </header>
 
-        <AnimatePresence mode="wait">
-          <motion.main key={path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="flex-1 px-4 py-5 pb-28 md:px-8 lg:pb-10">
+                  <motion.main key={path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15 }} className="flex-1 px-4 py-5 pb-28 md:px-8 lg:pb-10">
             {!me.data.email_verified && (
               <div className="mb-4 rounded-xl bg-sun-light px-4 py-3 text-sm text-amber-900">
                 Emailingiz tasdiqlanmagan — ariza yuborish va chat uchun tasdiqlang. <Link href="/verify-email" className="font-bold underline">Tasdiqlash</Link>
@@ -103,7 +103,6 @@ export default function AppShell({ roles, nav, tabs, base, children }: { roles: 
             )}
             {children}
           </motion.main>
-        </AnimatePresence>
       </div>
 
       {/* Mobile bottom nav */}

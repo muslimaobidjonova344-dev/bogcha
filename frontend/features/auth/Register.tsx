@@ -2,7 +2,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Lock, Mail, Phone, School, UserRound } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Lock, Mail, School, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -11,6 +11,7 @@ import { post } from '@/lib/api';
 import { ROLE_HOME, errMsg } from '@/lib/format';
 import AuthShell, { riseIn } from './AuthShell';
 import { Checkbox, FormError, PasswordField, PasswordStrength, SubmitButton, TextField } from './fields';
+import { PasswordTemplate, PhoneField } from './inputs';
 import { RegisterValues, normPhone, registerSchema } from './schemas';
 
 const ROLES = [
@@ -26,7 +27,7 @@ export default function Register() {
   const initial = ROLES.find((r) => r.id === sp.get('role'))?.id || 'parent';
   const [step, setStep] = useState<1 | 2>(1);
   const [formErr, setFormErr] = useState('');
-  const { register, control, handleSubmit, watch, setError, formState: { errors } } = useForm<RegisterValues>({
+  const { register, control, handleSubmit, watch, setError, setValue, formState: { errors } } = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema), mode: 'onTouched', defaultValues: { role: initial, agree: false as any },
   });
   const role = watch('role'); const pwd = watch('password') || '';
@@ -82,10 +83,11 @@ export default function Register() {
                 )}
               </AnimatePresence>
               <TextField label="Email manzilingiz" type="email" autoComplete="email" inputMode="email" icon={<Mail size={19} />} error={errors.email?.message} {...register('email')} />
-              <TextField label="Telefon raqamingiz" type="tel" autoComplete="tel" inputMode="tel" icon={<Phone size={19} />} hint="Masalan: +998 90 123 45 67" error={errors.phone?.message} {...register('phone')} />
+              <Controller control={control} name="phone" render={({ field }) => <PhoneField name={field.name} value={field.value} onChange={field.onChange} onBlur={field.onBlur} error={errors.phone?.message} />} />
               <div>
                 <PasswordField label="Parol (kamida 8 ta belgi)" autoComplete="new-password" icon={<Lock size={19} />} error={errors.password?.message} {...register('password')} />
                 <PasswordStrength value={pwd} />
+                <PasswordTemplate value={pwd} onGenerate={(g) => { setValue('password', g, { shouldValidate: true, shouldDirty: true }); setValue('password_confirm', g, { shouldValidate: true, shouldDirty: true }); }} />
               </div>
               <PasswordField label="Parolni takrorlang" autoComplete="new-password" icon={<Lock size={19} />} error={errors.password_confirm?.message} {...register('password_confirm')} />
               <Checkbox error={errors.agree?.message} label={<><Link href="#" className="font-bold text-primary underline">Foydalanish shartlariga</Link> va <Link href="#" className="font-bold text-primary underline">maxfiylik siyosatiga</Link> roziman</>} {...register('agree')} />

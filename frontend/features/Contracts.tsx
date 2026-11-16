@@ -12,6 +12,34 @@ const ST: Record<string, { label: string; cls: string }> = {
   active: { label: 'Faol (imzolangan)', cls: 'bg-primary-50 text-primary' },
   cancelled: { label: 'Bekor qilingan', cls: 'bg-red-50 text-red-700' },
 };
+/** Imzo identifikatori (shartnoma raqami, imzo egasi va vaqtidan olingan qisqa kod). */
+function sigId(...parts: string[]) {
+  let h = 2166136261; const t = parts.join('|');
+  for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+  const x = (h >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  return `${x.slice(0, 4)}-${x.slice(4)}`;
+}
+
+/** Qo'lda yozilgandek imzo, "Elektron imzo bilan tasdiqlangan" muhri, vaqt va imzo ID. */
+function SignatureBlock({ who, name, at, number }: { who: string; name?: string | null; at?: string | null; number: string }) {
+  const tilt = ((sigId(number, who).charCodeAt(0) % 5) - 2) * 0.8;
+  return (
+    <div className="rounded-xl border border-black/15 p-4">
+      <div className="text-xs font-bold uppercase tracking-wide text-black/45">{who} imzosi</div>
+      {at && name ? (
+        <>
+          <div className="relative mt-2 h-20">
+            <div className="absolute inset-x-0 top-0 truncate text-[34px] leading-[1.1] text-[#1E3A8A]" style={{ fontFamily: 'var(--font-sign), "Segoe Script", "Brush Script MT", cursive', transform: `rotate(${tilt}deg)` }}>{name}</div>
+            <svg viewBox="0 0 220 16" className="absolute bottom-3 left-0 w-full text-[#1E3A8A]/70" fill="none" aria-hidden><path d="M2 12 C40 2, 80 14, 120 7 S190 3, 218 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+            <div className="absolute bottom-0 right-0 flex rotate-[-6deg] items-center gap-1 rounded-md border-2 border-primary/70 px-1.5 py-0.5 text-[9px] font-extrabold uppercase leading-tight tracking-wide text-primary/80"><span className="text-[12px]">✓</span>Elektron imzo<br />bilan tasdiqlangan</div>
+          </div>
+          <div className="mt-2 border-t border-black/10 pt-2 text-[12px] leading-snug text-black/55"><b className="text-black/70">{name}</b><br />{dmyHm(at)} · Imzo ID: {sigId(number, name, at)}</div>
+        </>
+      ) : <div className="mt-3 flex h-20 items-center text-sm italic text-black/40">Imzo kutilmoqda…</div>}
+    </div>
+  );
+}
+
 const unit = (c: any) => (c.price_unit === 'month' ? 'oyiga' : 'bir dars');
 
 export function ContractsList({ base }: { base: string }) {
@@ -74,12 +102,10 @@ export function ContractView({ id, role, base }: { id: string; role: 'parent' | 
             <section className="mt-5 space-y-3">{c.terms.map((t: any) => (<div key={t.title}><h2 className="font-extrabold text-primary">{t.title}</h2><p className="text-[14.5px] leading-relaxed text-black/75">{t.text}</p></div>))}</section>
 
             <section className="mt-8 grid gap-6 sm:grid-cols-2">
-              {[{ who: 'Ijrochi', n: c.provider_signed_name, at: c.provider_signed_at }, { who: 'Buyurtmachi', n: c.parent_signed_name, at: c.parent_signed_at }].map((s) => (
-                <div key={s.who} className="rounded-xl border border-dashed border-black/20 p-4">
-                  <div className="text-xs font-bold uppercase text-black/45">{s.who} imzosi</div>
-                  {s.at ? (<><div className="mt-2 font-[cursive] text-2xl text-primary" style={{ fontFamily: '"Segoe Script","Brush Script MT",cursive' }}>{s.n}</div><div className="mt-1 text-xs text-black/50">Elektron imzo · {dmyHm(s.at)}</div></>) : <div className="mt-3 text-sm italic text-black/40">Imzo kutilmoqda…</div>}
-                </div>))}
+              <SignatureBlock who="Ijrochi" name={c.provider_signed_name} at={c.provider_signed_at} number={c.number} />
+              <SignatureBlock who="Buyurtmachi" name={c.parent_signed_name} at={c.parent_signed_at} number={c.number} />
             </section>
+            <p className="mt-4 text-center text-[11.5px] text-black/40">Hujjat Kichkintoy platformasida elektron shaklda tuzilgan. Imzo vaqti va tomonlar ma‘lumotlari tizimda saqlanadi.</p>
           </article>
 
           {role === 'parent' && c.status === 'sent' && (

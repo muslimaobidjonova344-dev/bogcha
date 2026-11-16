@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
+import { Avatar, cleanName } from '@/components/ui/Art';
 import { Card, PageTitle } from '@/components/ui/ui';
 import { useLogout, useMe } from '@/hooks/useAuth';
 import { ROLE_LABEL } from '@/lib/format';
@@ -13,8 +14,8 @@ export default function Cabinet({ nav, base }: { nav: NavItem[]; base: string })
   return (
     <>
       <Card className="mb-4 flex items-center gap-3">
-        <div className="grid h-14 w-14 place-items-center rounded-full bg-primary text-xl font-extrabold text-white">{(me.data?.full_name || '?').charAt(0)}</div>
-        <div><div className="font-extrabold text-primary">{me.data?.full_name}</div><div className="text-sm text-black/55">{me.data && ROLE_LABEL[me.data.role]} · {me.data?.email}</div></div>
+        <Avatar name={me.data?.full_name} id={me.data?.id} src={(me.data as any)?.avatar_url} size={56} />
+        <div><div className="font-extrabold text-primary">{cleanName(me.data?.full_name)}</div><div className="text-sm text-black/55">{me.data && ROLE_LABEL[me.data.role]} · {me.data?.email}</div></div>
       </Card>
       <PageTitle title="Kabinet" />
       <div className="grid grid-cols-2 gap-3">

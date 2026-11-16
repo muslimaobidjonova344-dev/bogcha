@@ -1,6 +1,9 @@
 'use client';
+import { PhoneField } from '@/features/auth/inputs';
+import { formatUzPhone } from '@/lib/phone';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import LockSettings from './LockSettings';
 import { Button, Card, Field, PageTitle, useToast, Async } from '@/components/ui/ui';
 import { useMe } from '@/hooks/useAuth';
 import { get, patch, post, put, del } from '@/lib/api';
@@ -45,10 +48,11 @@ export default function Settings() {
           <Field label="Ism va familiya"><input className="input" value={name ?? u.full_name} onChange={(e) => setName(e.target.value)} /></Field>
           <Field label="Email" hint={u.email_verified ? 'Tasdiqlangan ✓' : 'Tasdiqlanmagan'}><input className="input bg-black/5" value={u.email || ''} disabled /></Field>
           {!u.email_verified && <Button variant="outline" loading={resend.isPending} onClick={() => resend.mutate()}>Tasdiqlash xatini qayta yuborish</Button>}
-          <Field label="Telefon (+998XXXXXXXXX)"><input className="input" defaultValue={u.phone || ''} onChange={(e) => setPhone(e.target.value)} placeholder="+998901234567" /></Field>
+          <PhoneField label="Telefon raqami" value={phone ?? formatUzPhone(u.phone || '')} onChange={setPhone} />
           <Button loading={saveProfile.isPending} onClick={() => saveProfile.mutate()}>Saqlash</Button>
         </div>
       </Card>
+      <LockSettings />
       <Card>
         <h2 className="mb-3 font-bold text-primary">Parolni o&apos;zgartirish</h2>
         <div className="space-y-3">

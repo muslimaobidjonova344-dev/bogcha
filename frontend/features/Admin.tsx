@@ -7,6 +7,7 @@ import { Async, Badge, Button, Card, Confirm, Empty, Field, Modal, PageTitle, Pa
 import { del, get, post } from '@/lib/api';
 import { dmy, dmyHm, errMsg } from '@/lib/format';
 import { Bars } from './ProviderCommon';
+import { AdminAnalytics } from './Reports';
 
 const ROLE_LBL: Record<string, string> = { parent: 'Ota-ona', kindergarten_admin: 'Bog‘cha', tutor: 'Repetitor', super_admin: 'Super Admin' };
 const inval = (qc: any, ...k: string[]) => k.forEach((x) => qc.invalidateQueries({ queryKey: [x] }));
@@ -53,7 +54,7 @@ export function AdminUsers() {
       </div>
       <Async q={q} empty={<Empty title="Foydalanuvchi topilmadi" />}>{(d) => (<><div className="space-y-2">{d.items.map((u: any) => (
         <Card key={u.id} className="flex flex-wrap items-center justify-between gap-2 !p-3">
-          <div className="min-w-0"><div className="font-bold">{u.full_name} {u.is_demo && <Badge cls="bg-sun-light text-amber-800">DEMO</Badge>}</div><div className="truncate text-sm text-black/55">{u.email}{u.phone ? ` · ${u.phone}` : ''}</div><div className="text-xs text-black/40">Ro‘yxatdan: {dmy(u.created_at)}{u.last_login_at ? ` · oxirgi kirish: ${dmyHm(u.last_login_at)}` : ''}</div></div>
+          <div className="min-w-0"><div className="font-bold">{u.full_name}</div><div className="truncate text-sm text-black/55">{u.email}{u.phone ? ` · ${u.phone}` : ''}</div><div className="text-xs text-black/40">Ro‘yxatdan: {dmy(u.created_at)}{u.last_login_at ? ` · oxirgi kirish: ${dmyHm(u.last_login_at)}` : ''}</div></div>
           <div className="flex flex-wrap items-center gap-2"><Badge>{ROLE_LBL[u.role]}</Badge>{!u.email_verified && <Badge cls="bg-sun-light text-amber-800">Email tasdiqlanmagan</Badge>}{u.totp_enabled && <Badge cls="bg-primary-100 text-primary">2FA</Badge>}{!u.is_active && <Badge cls="bg-red-100 text-red-700">Bloklangan</Badge>}
             {u.is_active ? <Button variant="ghost" className="!min-h-[36px] !text-red-600" onClick={() => setBlk(u)}>Bloklash</Button> : <Button variant="outline" className="!min-h-[36px]" onClick={() => unblock.mutate(u.id)}>Faollashtirish</Button>}
             <Button variant="ghost" className="!min-h-[36px]" onClick={() => { setRoleU(u); setNewRole(u.role === 'super_admin' ? 'parent' : 'super_admin'); }}>Rol</Button></div>
@@ -82,7 +83,7 @@ export function AdminProviders({ queue }: { queue?: boolean }) {
         <select className="input" value={f.status} onChange={(e) => { setF({ ...f, status: e.target.value }); setPage(1); }}><option value="">{queue ? 'Kutilayotganlar' : 'Barcha holat'}</option>{['pending', 'under_review', 'approved', 'rejected', 'suspended'].map((s) => <option key={s} value={s}>{s}</option>)}</select>
       </div>
       <Async q={q} empty={<Empty title="Muassasa topilmadi" />}>{(d) => (<><div className="space-y-2">{d.items.map((p: any) => (
-        <Card key={p.id} className="flex flex-wrap items-center justify-between gap-2 !p-3 cursor-pointer" ><div onClick={() => setOpen(p.id)} className="min-w-0 flex-1"><div className="font-bold">{p.name} {p.is_demo && <Badge cls="bg-sun-light text-amber-800">DEMO</Badge>}</div><div className="text-sm text-black/55">{p.type === 'tutor' ? 'Repetitor' : 'Bog‘cha'} · {p.owner_name} · {p.owner_email}</div><div className="text-xs text-black/40">{dmy(p.created_at)} · hujjatlar: {p.documents_count}{!p.owner_email_verified && ' · email tasdiqlanmagan'}</div></div><div className="flex items-center gap-2"><VerifyBadge status={p.verification_status} /><Button variant="outline" className="!min-h-[36px]" onClick={() => setOpen(p.id)}>Ko‘rish</Button></div></Card>))}</div><Pagination page={page} pageSize={20} total={d.total} onChange={setPage} /></>)}</Async>
+        <Card key={p.id} className="flex flex-wrap items-center justify-between gap-2 !p-3 cursor-pointer" ><div onClick={() => setOpen(p.id)} className="min-w-0 flex-1"><div className="font-bold">{p.name}</div><div className="text-sm text-black/55">{p.type === 'tutor' ? 'Repetitor' : 'Bog‘cha'} · {p.owner_name} · {p.owner_email}</div><div className="text-xs text-black/40">{dmy(p.created_at)} · hujjatlar: {p.documents_count}{!p.owner_email_verified && ' · email tasdiqlanmagan'}</div></div><div className="flex items-center gap-2"><VerifyBadge status={p.verification_status} /><Button variant="outline" className="!min-h-[36px]" onClick={() => setOpen(p.id)}>Ko‘rish</Button></div></Card>))}</div><Pagination page={page} pageSize={20} total={d.total} onChange={setPage} /></>)}</Async>
       <ProviderReview id={open} onClose={() => setOpen(null)} />
     </>
   );
@@ -206,5 +207,7 @@ export function AdminAudit() {
 }
 
 export function AdminExports() {
-  return (<><PageTitle title="Hisobotlar" sub="CSV formatda yuklab olish" /><div className="grid gap-3 sm:grid-cols-3">{[['providers', 'Muassasalar'], ['users', 'Foydalanuvchilar'], ['applications', 'Arizalar']].map(([k, l]) => (<Card key={k}><div className="mb-3 font-bold">{l}</div><a className="inline-flex items-center gap-1 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white" href={`/api/v1/admin/reports/export.csv?kind=${k}`}><Download size={16} />CSV</a></Card>))}</div></>);
+  return (<><AdminAnalytics />
+    <h2 className="mb-2 mt-8 font-extrabold text-primary">Ma‘lumotlarni yuklab olish (CSV)</h2>
+    <div className="grid gap-3 sm:grid-cols-3">{[['providers', 'Muassasalar'], ['users', 'Foydalanuvchilar'], ['applications', 'Arizalar']].map(([k, l]) => (<Card key={k}><div className="mb-3 font-bold">{l}</div><a className="inline-flex items-center gap-1 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white" href={`/api/v1/admin/reports/export.csv?kind=${k}`}><Download size={16} />CSV</a></Card>))}</div></>);
 }

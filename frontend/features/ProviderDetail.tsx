@@ -1,4 +1,5 @@
 'use client';
+import { ProviderCover } from '@/components/ui/Art';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BadgeCheck, Flag, Heart, MapPin, MessageSquare, Phone } from 'lucide-react';
 import Link from 'next/link';
@@ -100,7 +101,7 @@ export default function ProviderDetail({ id, type }: { id: string; type: 'kinder
   return (
     <div className="space-y-4">
       <div className="card overflow-hidden">
-        <div className="h-40 bg-gradient-to-br from-primary-100 to-peach-light md:h-56">{p.cover_url ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={p.cover_url} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-6xl">{kg ? '🏡' : '📚'}</div>}</div>
+        <div className="h-40 bg-gradient-to-br from-primary-100 to-peach-light md:h-56">{p.cover_url ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={p.cover_url} alt="" className="h-full w-full object-cover" /> : <ProviderCover id={p.id} name={p.name} type={p.type || (kg ? 'kindergarten' : 'tutor')} label={p.specialty || p.subjects?.[0]} className="h-full w-full" />}</div>
         <div className="p-4 md:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>

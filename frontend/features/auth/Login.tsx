@@ -11,23 +11,27 @@ import { post } from '@/lib/api';
 import { ROLE_HOME, errMsg } from '@/lib/format';
 import AuthShell, { riseIn } from './AuthShell';
 import { Checkbox, FormError, PasswordField, SubmitButton, TextField } from './fields';
+import { PhoneField } from './inputs';
 import { LoginValues, loginSchema, normPhone } from './schemas';
 
 export const safeNext = (n: string | null) => (n && n.startsWith('/') && !n.startsWith('//') ? n : null);
 
 // Sinov (demo) hisoblari: backendda `python -m app.seed --demo` (yoki SEED_DEMO=1) bajarilgan bo'lsa ishlaydi.
 const DEMO = [
-  { label: 'Ota-ona', email: 'demo.parent@example.com' },
-  { label: 'Bog‘cha admini', email: 'demo.kg1@example.com' },
-  { label: 'Repetitor', email: 'demo.tutor1@example.com' },
+  { role: 'Ota-ona', name: 'Dilnoza Karimova', sub: '2 farzand · bog‘cha va repetitorga arizalar, shartnoma, suhbat', email: 'demo.parent@example.com' },
+  { role: 'Bog‘cha admini', name: 'Yorqin Bolajon bog‘chasi', sub: 'Guruhlar, tarbiyachilar, arizalar, sharhlar, statistika', email: 'demo.kg1@example.com' },
+  { role: 'Repetitor', name: 'Madina Rahimova', sub: 'Matematika · o‘quvchilar, dars jadvali, sharhlar', email: 'demo.tutor1@example.com' },
+  { role: 'Ota-ona', name: 'Gulnora Rashidova', sub: 'Yorqin Bolajon va Ilm Nur bilan bog‘langan', email: 'demo.parent3@example.com' },
+  { role: 'Repetitor', name: 'Ilm Nur o‘quv markazi', sub: 'Ingliz tili · faol o‘quvchilar va shartnomalar', email: 'demo.tutor2@example.com' },
+  { role: 'Bog‘cha admini', name: 'Mehrli bog‘cha', sub: 'Suhbatga chaqirilgan va rad etilgan arizalar', email: 'demo.kg2@example.com' },
 ];
 const DEMO_PASSWORD = 'Demo12345';
 
 export default function Login() {
   const router = useRouter(); const sp = useSearchParams(); const qc = useQueryClient();
   const [need2fa, setNeed2fa] = useState(false); const [code, setCode] = useState(''); const [formErr, setFormErr] = useState(''); const [done, setDone] = useState(false);
-  const [mode, setMode] = useState<'email' | 'phone'>('email'); const [demoOpen, setDemoOpen] = useState(false);
-  const { register, handleSubmit, setValue, clearErrors, formState: { errors } } = useForm<LoginValues>({ resolver: zodResolver(loginSchema), mode: 'onTouched', defaultValues: { remember: true } });
+  const [mode, setMode] = useState<'email' | 'phone'>('email'); const [demoOpen, setDemoOpen] = useState(true);
+  const { register, handleSubmit, setValue, clearErrors, watch, formState: { errors } } = useForm<LoginValues>({ resolver: zodResolver(loginSchema), mode: 'onTouched', defaultValues: { remember: true } });
 
   const m = useMutation({
     mutationFn: (v: LoginValues) => post('/auth/login', { identifier: v.identifier.includes('@') ? v.identifier.trim() : normPhone(v.identifier), password: v.password, remember: v.remember, totp_code: need2fa ? code : undefined }),
@@ -49,7 +53,9 @@ export default function Login() {
             </button>
           ))}
         </div>
-        <TextField key={mode} label={mode === 'email' ? 'Email manzilingiz' : 'Telefon raqamingiz'} autoComplete={mode === 'email' ? 'email' : 'tel'} inputMode={mode === 'email' ? 'email' : 'tel'} type={mode === 'email' ? 'email' : 'tel'} hint={mode === 'phone' ? 'Masalan: +998 90 123 45 67' : undefined} icon={mode === 'email' ? <Mail size={19} /> : <Phone size={19} />} error={errors.identifier?.message} {...register('identifier')} />
+        {mode === 'phone'
+          ? <PhoneField key="ph" label="Telefon raqamingiz" value={watch('identifier')} onChange={(v) => setValue('identifier', v, { shouldValidate: true })} error={errors.identifier?.message} />
+          : <TextField key="em" label="Email manzilingiz" autoComplete="email" inputMode="email" type="email" icon={<Mail size={19} />} error={errors.identifier?.message} {...register('identifier')} />}
         <PasswordField label="Parol" autoComplete="current-password" icon={<Lock size={19} />} error={errors.password?.message} {...register('password')} />
         {need2fa && <TextField label="2FA kodi (6 xonali)" inputMode="numeric" maxLength={6} autoFocus value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} hint="Autentifikator ilovasidagi kod" />}
         <motion.div {...riseIn} className="flex items-center justify-between gap-3">
@@ -63,14 +69,18 @@ export default function Login() {
       <motion.p {...riseIn} className="mt-6 text-center text-[15px] text-black/60">Hisobingiz yo‘qmi? <Link href="/register" className="font-bold text-primary underline-offset-4 hover:underline">Ro‘yxatdan o‘ting</Link></motion.p>
 
       <div className="mt-5 border-t border-dashed border-black/10 pt-4">
-        <button type="button" onClick={() => setDemoOpen((o) => !o)} className="mx-auto flex items-center gap-1.5 text-[13px] font-bold text-amber-700"><Sparkles size={15} />Sinov uchun demo hisoblar</button>
+        <button type="button" onClick={() => setDemoOpen((o) => !o)} aria-expanded={demoOpen} className="mx-auto flex items-center gap-1.5 text-[13px] font-bold text-amber-700"><Sparkles size={15} />Tezkor kirish: o‘zaro bog‘langan hisoblar</button>
         <AnimatePresence initial={false}>
           {demoOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div className="mt-3 grid grid-cols-3 gap-2">{DEMO.map((d) => (
-                <button key={d.email} type="button" onClick={() => fillDemo(d.email)} className="rounded-xl border border-amber-200 bg-sun-light px-2 py-2 text-[12.5px] font-bold text-amber-900 transition hover:-translate-y-0.5 hover:shadow-card">{d.label}</button>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">{DEMO.map((d) => (
+                <button key={d.email} type="button" onClick={() => fillDemo(d.email)} className="rounded-xl border border-amber-200 bg-sun-light/70 px-3 py-2.5 text-left transition hover:-translate-y-0.5 hover:shadow-card">
+                  <span className="block text-[11px] font-extrabold uppercase tracking-wide text-amber-800/80">{d.role}</span>
+                  <span className="block text-[13.5px] font-extrabold leading-tight text-amber-950">{d.name}</span>
+                  <span className="mt-0.5 block text-[11.5px] leading-snug text-black/55">{d.sub}</span>
+                </button>
               ))}</div>
-              <p className="mt-2 text-center text-[11.5px] text-black/45">Parol: {DEMO_PASSWORD}. Hisoblar sinov ma‘lumotlari yuklangan bo‘lsagina ishlaydi.</p>
+              <p className="mt-2 text-center text-[11.5px] text-black/45">Bosilganda email va parol avtomatik to‘ldiriladi (parol: {DEMO_PASSWORD}).</p>
             </motion.div>
           )}
         </AnimatePresence>

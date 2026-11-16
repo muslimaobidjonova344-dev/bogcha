@@ -161,5 +161,7 @@ def lesson_status(lid: str, data: LessonStatusIn, p: Provider = Depends(get_my_p
 def statistics(p: Provider = Depends(get_my_provider), user: User = Depends(prov_roles), db: Session = Depends(get_db)):
     sc = _status_counts(db, p.id)
     dist = dict(db.query(Review.rating, func.count()).filter(Review.provider_id == p.id, Review.status == "published", Review.deleted_at.is_(None)).group_by(Review.rating).all())
+    from app.services.analytics import provider_extra
     return {"applications_by_month": _month_series(db, p.id, 12), "status_counts": sc,
-            "rating_distribution": {str(i): dist.get(i, 0) for i in range(1, 6)}, "rating_avg": p.rating_avg, "rating_count": p.rating_count}
+            "rating_distribution": {str(i): dist.get(i, 0) for i in range(1, 6)}, "rating_avg": p.rating_avg, "rating_count": p.rating_count,
+            "type": p.type, **provider_extra(db, p)}

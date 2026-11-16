@@ -4,6 +4,7 @@ import { BadgeCheck, Heart, MapPin, Scale } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { Badge, Stars, useToast } from '@/components/ui/ui';
+import { ProviderCover, cleanName } from '@/components/ui/Art';
 import { useMe } from '@/hooks/useAuth';
 import { useCompare } from '@/hooks/useCompare';
 import { del, put } from '@/lib/api';
@@ -26,12 +27,12 @@ export default function ProviderCard({ p, saved }: { p: any; saved?: boolean }) 
     <motion.article whileHover={{ y: -3 }} className="card overflow-hidden flex flex-col">
       <Link href={href} className="block">
         <div className="relative h-36 bg-gradient-to-br from-primary-100 to-peach-light">
-          {p.cover_url ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={p.cover_url} alt={p.name} className="h-full w-full object-cover" loading="lazy" /> : <div className="grid h-full place-items-center text-5xl">{kg ? '🏡' : '📚'}</div>}
+          {p.cover_url ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={p.cover_url} alt={cleanName(p.name)} className="h-full w-full object-cover" loading="lazy" /> : <ProviderCover id={p.id} name={p.name} type={p.type} label={p.specialty || p.subjects?.[0]} className="h-full w-full" />}
           {p.verified && <span className="absolute left-2 top-2"><Badge cls="bg-white/95 text-primary"><BadgeCheck size={14} className="mr-1" />Tasdiqlangan</Badge></span>}
         </div>
       </Link>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <Link href={href}><h3 className="line-clamp-1 text-base font-extrabold text-primary">{p.name}</h3></Link>
+        <Link href={href}><h3 className="line-clamp-1 text-base font-extrabold text-primary">{cleanName(p.name)}</h3></Link>
         <div className="flex items-center gap-2 text-sm"><Stars value={p.rating_avg} size={14} /><span className="font-semibold">{p.rating_count ? p.rating_avg.toFixed(1) : 'Yangi'}</span>{p.rating_count > 0 && <span className="text-black/45">({p.rating_count})</span>}</div>
         <div className="flex items-center gap-1 text-sm text-black/60"><MapPin size={14} />{[p.district, p.region].filter(Boolean).join(', ') || '—'}{p.distance_km != null && <span className="ml-1 font-semibold text-primary">· {p.distance_km} km</span>}</div>
         {kg ? (

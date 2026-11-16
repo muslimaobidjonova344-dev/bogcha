@@ -55,7 +55,7 @@ def _user(db, email, role, name, pw, phone=None):
     return u
 
 
-def seed_demo(db: Session):
+def _seed_demo_base(db: Session):
     """DEMO ma'lumotlar (is_demo=True, nomi '[DEMO]'): ota-onalar, bog'chalar, repetitorlar, arizalar (barcha holatlar),
     sharhlar, suhbatlar, bildirishnomalar, shartnomalar. Ishlab chiqarishda ishlatmang. Qayta ishga tushirsa — qo'shmaydi."""
     from datetime import datetime, timedelta, timezone
@@ -234,6 +234,19 @@ def seed_demo(db: Session):
         db.add(n)
     db.commit()
     print("DEMO ma'lumotlar yaratildi. Kirish (parol Demo12345): demo.parent@example.com, demo.kg1@example.com, demo.tutor1@example.com")
+
+
+def seed_demo(db: Session):
+    """Asosiy namunaviy ma'lumotlar + qo'shimcha (ko'proq jarayon). Ikkalasi ham idempotent."""
+    _seed_demo_base(db)
+    try:
+        from app.seed_demo_extra import run
+        run(db)
+    except Exception as e:  # server ishga tushishi to'xtamasin
+        import traceback
+        db.rollback()
+        print("Qo'shimcha namunaviy ma'lumotlar yaratilmadi:", e)
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

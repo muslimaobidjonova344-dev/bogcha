@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { checkUzPhone } from '@/lib/phone';
 
 /** Telefonni +998XXXXXXXXX ko'rinishiga keltiradi (backend norm_phone bilan bir xil qoida). */
 export function normPhone(v: string): string | null {
@@ -14,7 +15,9 @@ export const passwordRule = z.string().min(8, 'Kamida 8 belgi').max(128)
   .refine((v) => /\d/.test(v), 'Kamida bitta raqam kerak');
 
 export const emailRule = z.string().trim().min(1, 'Email kiriting').email('Email noto‘g‘ri formatda');
-export const phoneRule = z.string().trim().min(1, 'Telefon kiriting').refine((v) => !!normPhone(v), 'Format: +998 90 123 45 67');
+export const phoneRule = z.string().trim().min(1, 'Telefon kiriting')
+  .refine((v) => !!normPhone(v), 'Format: +998 90 123 45 67')
+  .refine((v) => !normPhone(v) || checkUzPhone(v).ok, 'Operator kodi noto‘g‘ri (masalan: 90, 91, 93, 94, 97, 99, 33, 88)');
 
 export const loginSchema = z.object({
   identifier: z.string().trim().min(1, 'Email yoki telefon kiriting').refine((v) => (v.includes('@') ? z.string().email().safeParse(v).success : !!normPhone(v)), 'Email yoki +998 telefon raqam kiriting'),

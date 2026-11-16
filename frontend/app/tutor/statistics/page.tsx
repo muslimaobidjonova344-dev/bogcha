@@ -1,5 +1,5 @@
-import { ProviderStatistics } from '@/features/ProviderCommon';
+import { ProviderReports } from '@/features/Reports';
 
 export default function Page() {
-  return <ProviderStatistics />;
+  return <ProviderReports />;
 }

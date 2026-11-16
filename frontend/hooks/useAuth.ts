@@ -1,5 +1,6 @@
 'use client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { removeLock } from '@/lib/applock';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { get, post } from '@/lib/api';
@@ -28,5 +29,5 @@ export function useRequireRole(roles: string[]) {
 export function useLogout() {
   const qc = useQueryClient();
   const router = useRouter();
-  return async () => { try { await post('/auth/logout'); } catch {} qc.clear(); router.replace('/'); };
+  return async () => { try { await post('/auth/logout'); } catch {} removeLock(); qc.clear(); router.replace('/'); };
 }
