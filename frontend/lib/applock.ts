@@ -10,13 +10,13 @@ export const PIN_LENGTHS = [4, 6] as const;
 type Lock = { s: string; h: string; len: number; bio?: string | null };
 const enc = new TextEncoder();
 const b64 = (b: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...Array.from(new Uint8Array(b as ArrayBuffer))));
-const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-const rand = (n: number) => crypto.getRandomValues(new Uint8Array(n));
+const unb64 = (s: string): Uint8Array<ArrayBuffer> => { const b = atob(s); const a = new Uint8Array(new ArrayBuffer(b.length)); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; };
+const rand = (n: number): Uint8Array<ArrayBuffer> => { const a = new Uint8Array(new ArrayBuffer(n)); crypto.getRandomValues(a); return a; };
 
 function read(): Lock | null { try { const v = localStorage.getItem(KEY); return v ? JSON.parse(v) : null; } catch { return null; } }
 function write(l: Lock | null) { try { l ? localStorage.setItem(KEY, JSON.stringify(l)) : localStorage.removeItem(KEY); } catch { /* xotira yopiq */ } }
 
-async function derive(pin: string, salt: Uint8Array): Promise<string> {
+async function derive(pin: string, salt: Uint8Array<ArrayBuffer>): Promise<string> {
   const key = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveBits']);
   return b64(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 150_000 }, key, 256));
 }
