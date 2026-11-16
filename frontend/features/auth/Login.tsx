@@ -2,7 +2,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Lock, Mail, Phone, Sparkles } from 'lucide-react';
+import { ArrowRight, Lock, Mail, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -66,7 +66,7 @@ export default function Login() {
         <SubmitButton type="submit" loading={m.isPending} success={done}>Kirish<ArrowRight size={19} /></SubmitButton>
       </form>
 
-      <motion.p {...riseIn} className="mt-6 text-center text-[15px] text-black/60">Hisobingiz yo‘qmi? <Link href="/register" className="font-bold text-primary underline-offset-4 hover:underline">Ro‘yxatdan o‘ting</Link></motion.p>
+      <motion.p {...riseIn} className="mt-6 text-center text-[15px] text-black/60">Hisobingiz yo‘qmi? <Link href="/register" className="font-bold text-primary underline-offset-4 hover:underline">Ro‘yxatdan o‘ting</Link> · <Link href="/help" className="font-bold text-primary underline-offset-4 hover:underline">Yo‘riqnoma</Link></motion.p>
 
       <div className="mt-5 border-t border-dashed border-black/10 pt-4">
         <button type="button" onClick={() => setDemoOpen((o) => !o)} aria-expanded={demoOpen} className="mx-auto flex items-center gap-1.5 text-[13px] font-bold text-amber-700"><Sparkles size={15} />Tezkor kirish: o‘zaro bog‘langan hisoblar</button>

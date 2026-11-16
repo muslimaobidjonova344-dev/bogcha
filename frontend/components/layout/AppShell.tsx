@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
-import { Bell, LogOut, Menu, Sprout } from 'lucide-react';
+import { Bell, CircleHelp, LogOut, Menu, Sprout } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useState } from 'react';
@@ -85,6 +85,7 @@ export default function AppShell({ roles, nav, tabs, base, children }: { roles: 
           <button className="rounded-xl p-2 hover:bg-black/5 lg:hidden" onClick={() => setDrawer(true)} aria-label="Menyu"><Menu size={22} /></button>
           <div className="lg:hidden"><Logo /></div>
           <div className="ml-auto flex items-center gap-2">
+            <Link href="/help" className="rounded-xl p-2 hover:bg-black/5" aria-label="Yo‘riqnoma" title="Yo‘riqnoma"><CircleHelp size={20} /></Link>
             <Link href={`${base}/notifications`} className="relative rounded-xl p-2 hover:bg-black/5" aria-label="Bildirishnomalar">
               <Bell size={20} />{badges.notifications > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-peach ring-2 ring-white" />}
             </Link>

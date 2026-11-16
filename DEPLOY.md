@@ -56,12 +56,22 @@ Eslatma: 2FA yoqilgan hisoblar (masalan Super Admin) Google orqali kira olmaydi,
 
 ## 8. Sinov (demo) ma'lumotlari va email kodi
 
-**Demo ma'lumotlar** (6 bog'cha, 5 repetitor, 2 ota-ona, barcha holatdagi arizalar, sharhlar, suhbatlar, bildirishnomalar, ikkita shartnoma):
+**Demo ma'lumotlar** (12 bog'cha, 11 repetitor, 9 ota-ona, moderatsiya navbatidagi profillar, 12 oylik arizalar, shartnomalar, darslar, sharhlar, suhbatlar, bildirishnomalar — hisobotlar diagrammalari to'la bo'ladi):
 Render → kichkintoy-backend → Environment: `SEED_DEMO=1` va `ALLOW_DEMO_IN_PROD=1` qo'shing, keyin **Manual Deploy**.
 Seed idempotent: qayta ishga tushirsa takrorlamaydi. Demo hisoblar (parol `Demo12345`):
-`demo.parent@example.com`, `demo.parent2@example.com`, `demo.kg1..6@example.com`, `demo.tutor1..5@example.com`.
+`demo.parent@example.com`, `demo.parent2..9@example.com`, `demo.kg1..12@example.com`, `demo.tutor1..11@example.com`. Super admin hisobi alohida (env orqali).
 Haqiqiy foydalanuvchilar uchun ochishdan oldin ikkala o'zgaruvchini o'chiring va demo yozuvlarni admin panelidan olib tashlang.
 
 **Email tasdiqlash kodi:** ro'yxatdan o'tgach 6 xonali kod Apps Script orqali yuboriladi (30 daqiqa, 5 ta urinish). Apps Script hali sozlanmagan bo'lsa,
 lokal sinov uchun backendda `EMAIL_DEV_ECHO=1` (faqat ENV != production) qo'ying: kod sahifada ko'rinadi.
 Eslatma: bazaga yangi jadval/ustun qo'shilgani uchun deploy paytida `alembic upgrade head` (0002) avtomatik ishlaydi.
+
+
+## 9. Ilova (PWA): o'rnatish, PIN va barmoq izi
+- Chrome/Edge'da "Ilovani o'rnatish", iPhone'da Safari → Ulashish → Bosh ekranga qo'shish. Faqat HTTPS (Render'da bor).
+- O'rnatilgan ilovada kirgach PIN o'rnatish taklif qilinadi (qurilma qo'llasa — barmoq izi ham). Sozlamalar → "Ilova qulfi".
+- PIN va barmoq izi faqat qurilma qulfi: serverga yuborilmaydi. PIN esdan chiqsa — "Hisobdan chiqish".
+- Bosh sahifada "Orqaga" ikki marta bosilsa ilovadan chiqadi.
+- Service worker keshi (`public/sw.js`): `CACHE` nomini o'zgartirsangiz eski kesh tozalanadi.
+- Ommaviy sahifalar: `/about` (Ilova haqida), `/help` (Yo'riqnoma). Matnlar: `frontend/features/helpContent.ts`.
+- Render bepul rejasi 15 daqiqa so'rovsiz uxlaydi; birinchi ochilish 30–50 soniya. Supabase bepul loyiha 7 kun faolsiz bo'lsa to'xtaydi — haftada bir kirib turing.

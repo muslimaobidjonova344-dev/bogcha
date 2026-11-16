@@ -6,7 +6,7 @@ import { CompareBar } from '@/features/ProviderCard';
 import { useMe } from '@/hooks/useAuth';
 import { ROLE_HOME } from '@/lib/format';
 
-const LINKS = [{ href: '/kindergartens', label: 'Bog‘chalar' }, { href: '/tutors', label: 'Repetitorlar' }, { href: '/map', label: 'Xarita' }];
+const LINKS = [{ href: '/kindergartens', label: 'Bog‘chalar' }, { href: '/tutors', label: 'Repetitorlar' }, { href: '/map', label: 'Xarita' }, { href: '/help', label: 'Yo‘riqnoma' }, { href: '/about', label: 'Ilova haqida' }];
 
 export default function PublicShell({ children }: { children: ReactNode }) {
   const me = useMe();
@@ -20,10 +20,10 @@ export default function PublicShell({ children }: { children: ReactNode }) {
             {me.data ? <Link href={ROLE_HOME[me.data.role] || '/'} className="btn btn-primary !min-h-[40px]">Kabinet</Link> : <><Link href="/login" className="btn btn-ghost !min-h-[40px]">Kirish</Link><Link href="/register" className="btn btn-primary !min-h-[40px]">Ro‘yxatdan o‘tish</Link></>}
           </div>
         </div>
-        <nav className="flex justify-center gap-5 border-t border-black/5 py-1.5 text-sm font-semibold sm:hidden">{LINKS.map((l) => <Link key={l.href} href={l.href} className="text-primary/80">{l.label}</Link>)}</nav>
+        <nav className="flex flex-wrap justify-center gap-x-4 gap-y-1 border-t border-black/5 px-2 py-1.5 text-[13px] font-semibold sm:hidden">{LINKS.map((l) => <Link key={l.href} href={l.href} className="text-primary/80">{l.label}</Link>)}</nav>
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
-      <footer className="border-t border-black/5 py-6 text-center text-xs text-black/45">© {new Date().getFullYear()} Kichkintoy · O‘zbekiston</footer>
+      <footer className="border-t border-black/5 py-5 text-center text-xs text-black/45"><div className="mb-1 flex justify-center gap-4 font-semibold text-primary/70"><Link href="/about">Ilova haqida</Link><Link href="/help">Yo‘riqnoma</Link></div>© {new Date().getFullYear()} Kichkintoy · O‘zbekiston</footer>
       <CompareBar />
     </div>
   );
